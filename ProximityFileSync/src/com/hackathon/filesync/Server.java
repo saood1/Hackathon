@@ -1,14 +1,10 @@
 package com.hackathon.filesync;
 
-import java.io.BufferedOutputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.UnknownHostException;
-import java.util.ArrayList;
 import java.util.HashMap;
 
 public class Server {
@@ -56,7 +52,6 @@ public class Server {
 					 * 
 					 * 
 					 */
-					
 					
 					byte fileBytes[] = infoMap.get("file");
 					if(fileBytes!=null && fileBytes.length>0)
