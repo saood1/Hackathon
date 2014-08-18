@@ -6,11 +6,17 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.net.InetAddress;
+import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.HashMap;
+import java.util.Random;
 import java.util.concurrent.TimeUnit;
+
+import com.infomatiq.jsi.Point;
 
 
 /**
@@ -101,4 +107,97 @@ public class CommonUtility {
 			System.out.println(e.getLocalizedMessage());
 		}
     }
+	
+	/**
+	 * Starts the server socket
+	 * @param portNo
+	 */
+	public static void startServerSocket(int portNo){
+		try {
+			ServerSocket serverSocket = new ServerSocket(portNo);
+			
+			try{
+				while(true){
+					Socket socket = serverSocket.accept(); 
+					System.out.println("Accepted connection : " + socket); 
+					
+					ObjectInputStream objInp = new ObjectInputStream(socket.getInputStream());
+					HashMap<String, byte[]> infoMap = (HashMap<String, byte[]>)objInp.readObject();
+					
+					String tasks = new String(infoMap.get("string"));
+					/*
+					 * This block will contain the logic to parse the string which
+					 * will be a json string
+					 * 
+					 * 
+					 */
+					System.out.println(tasks);
+					
+					 
+					/*
+					 * This block will switch cases or conditional checks to execute tasks based on there nature
+					 * will be a json string
+					 * 
+					 * 
+					 * 
+					 */
+					
+					byte fileBytes[] = infoMap.get("file");
+					if(fileBytes!=null && fileBytes.length>0)
+						CommonUtility.recieveFile(fileBytes, "test.log");
+					
+					objInp.close();
+				}	
+			}
+			catch (IOException e){
+				System.out.println("An IOException occured " + e.getMessage());
+			}
+			finally{
+				serverSocket.close();
+			}
+		} 
+		catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+	
+	/**
+	 * @return Build the JSON string containing the client information when the system boots up for the first time
+	 */
+	public String getJSONClientInfo(){
+		String val = null;
+		return val;
+			
+	}
+	
+	/**
+	 * @return The ip address of the current system
+	 */
+	private String getMyIPAddress() throws UnknownHostException{
+		String val = InetAddress.getLocalHost().getHostAddress();
+		return val;
+	}
+	
+	/**
+	 * @return 5 digit port no which is unused by the system
+	 */
+	private String getMyPortNo(){
+		String val = String.valueOf(getRandomInteger(49152, 65535));
+		return val;
+	}
+	
+	/**
+	 * @return x,y co-ordinates of the users location
+	 */
+	private static Point getMyGeoCordinates(){
+		return new Point(getRandomInteger(0, 30), getRandomInteger(0, 30));
+	}
+	
+	/**
+	 * @return a random integer between the low-high range
+	 */
+	private static int getRandomInteger(int low, int high){
+		return (int) ((Math.random() * (high - low)) + low);
+	}
+	
 }
