@@ -112,7 +112,7 @@ public class CommonUtility {
 	 * Starts the server socket
 	 * @param portNo
 	 */
-	public static void startServerSocket(int portNo){
+	public static void startSocket(Integer portNo){
 		try {
 			ServerSocket serverSocket = new ServerSocket(portNo);
 			
@@ -164,7 +164,7 @@ public class CommonUtility {
 	/**
 	 * @return Build the JSON string containing the client information when the system boots up for the first time
 	 */
-	public String getJSONClientInfo(){
+	public static String getJSONClientInfo(){
 		String val = null;
 		return val;
 			
@@ -173,7 +173,7 @@ public class CommonUtility {
 	/**
 	 * @return The ip address of the current system
 	 */
-	private String getMyIPAddress() throws UnknownHostException{
+	public static String getMyIPAddress() throws UnknownHostException{
 		String val = InetAddress.getLocalHost().getHostAddress();
 		return val;
 	}
@@ -181,23 +181,43 @@ public class CommonUtility {
 	/**
 	 * @return 5 digit port no which is unused by the system
 	 */
-	private String getMyPortNo(){
-		String val = String.valueOf(getRandomInteger(49152, 65535));
+	public static int getMyPortNo(){
+		int val = getRandomInteger(49152, 65534);
 		return val;
 	}
 	
 	/**
 	 * @return x,y co-ordinates of the users location
 	 */
-	private static Point getMyGeoCordinates(){
+	public static Point getMyGeoCordinates(){
 		return new Point(getRandomInteger(0, 30), getRandomInteger(0, 30));
 	}
 	
 	/**
 	 * @return a random integer between the low-high range
 	 */
-	private static int getRandomInteger(int low, int high){
+	public static int getRandomInteger(int low, int high){
 		return (int) ((Math.random() * (high - low)) + low);
 	}
 	
+	
+	public static void sendClientInformationToServer(String jsonString) throws UnknownHostException, IOException, InterruptedException{
+		Socket socket = new Socket("<hostIp>", Constants.SERVER_PORT_NO);
+		HashMap<String, byte[]> information = new HashMap<String, byte[]>();
+		
+		try{
+			//Check if the socket connects to the given ip and ports
+			while(socket.isConnected()==false){
+				System.out.println("Waiting for the socket to open..");
+				TimeUnit.SECONDS.sleep(5);
+			}
+					
+			//Add the task to map
+			String task = "TASK:1";
+			information.put("string", task.getBytes());
+		}
+		finally{
+			socket.close();
+		}
+	}
 }
