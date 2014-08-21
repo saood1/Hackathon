@@ -13,7 +13,7 @@ import com.infomatiq.jsi.SpatialIndex;
 import com.infomatiq.jsi.rtree.RTree;
 
 public class Utility {
-	public static User createUser(Clients client, String userId,
+	public static User createUser(Client client, String userId,
 			List<UserFileMetaData> list) {
 		User user = new User(userId, client);		
 		return user;
@@ -32,8 +32,8 @@ public class Utility {
 	return new GeoLocation( lattitude,  longitude,
 			 state,  country);
 	}
-	public static Clients createClient(GeoLocation location, String ip, Integer port) {
-		return new Clients(location, ip, port);
+	public static Client createClient(GeoLocation location, String ip, Integer port) {
+		return new Client(location, ip, port);
 	}
 
 	public static UserFileMetaData createUserFileMetaData(String checksum,
@@ -47,7 +47,7 @@ public class Utility {
 		return createUser(createClient(location, ip, port), userId, list);
 	}
 	
-	public static void copyClientInfo(Clients src, Clients dest)
+	public static void copyClientInfo(Client src, Client dest)
 	{
 	      dest.setIp(src.getIp());
 	      dest.setLocation(src.getLocation());
