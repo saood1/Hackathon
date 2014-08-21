@@ -200,7 +200,21 @@ public class CommonUtility {
 		return (int) ((Math.random() * (high - low)) + low);
 	}
 	
+
+	/**
+	 * @return the current logged-in used id
+	 */
+	public static String getMyUserID() {
+		return System.getProperty("user.name");
+	}
 	
+	/**
+	 * This method sends information to Server for processing
+	 * @param jsonString
+	 * @throws UnknownHostException
+	 * @throws IOException
+	 * @throws InterruptedException
+	 */
 	public static void sendClientInformationToServer(String jsonString) throws UnknownHostException, IOException, InterruptedException{
 		Socket socket = new Socket("<hostIp>", Constants.SERVER_PORT_NO);
 		HashMap<String, byte[]> information = new HashMap<String, byte[]>();
@@ -220,4 +234,19 @@ public class CommonUtility {
 			socket.close();
 		}
 	}
+	
+	/**
+	 * Creates a shared directory under users home directory
+	 * @throws IOException
+	 */
+	public static void createUserSharedDir() throws IOException{
+		String homeDir = System.getProperty("user.home");
+		File dir = new File(homeDir + Constants.SHARED_DIR);
+		
+		if(!dir.exists()){
+			dir.mkdirs();
+		}
+		
+	}
+	
 }

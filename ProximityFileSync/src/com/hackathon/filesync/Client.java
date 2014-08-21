@@ -14,9 +14,14 @@ public class Client {
 		final int portNo = CommonUtility.getMyPortNo();
 		final String ipAddress = CommonUtility.getMyIPAddress();
 		final Point cord = CommonUtility.getMyGeoCordinates();
+		final String userID = CommonUtility.getMyUserID();
+		
+		//Create users shared directory if not already created
+		CommonUtility.createUserSharedDir();
 		
 		//Create the JSON Object
 		JSONObject jo = new JSONObject();
+		jo.put(Constants.USER_ID, userID);
 		jo.put(Constants.PORT_NO, portNo);
 		jo.put(Constants.IP_ADDRESS, ipAddress);
 		jo.put(Constants.CORDINATES, cord.x + "|" + cord.y);
