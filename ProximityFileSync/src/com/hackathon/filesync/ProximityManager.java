@@ -16,7 +16,6 @@ public class ProximityManager {
 	private Map<String, SpatialIndex> m_mapFromChecksumToProximityUsersRTree = new HashMap<String, SpatialIndex>();
 	private static ProximityManager s_singleton = null;
 	public static int id;
-	public int uid = 0;
 	//assumption: Client or geo location can not be same for two users and location should be auto-updated if client moves later
 	
 	
@@ -54,8 +53,8 @@ public class ProximityManager {
 	}
 
 	public int addUserID(String userId) {
-		int index = uid;
-		m_mapFromIndexToUserID.put(uid++, userId);
+		int index = userId.hashCode();
+		m_mapFromIndexToUserID.put(index, userId);
 		return index;
 	}
 	
