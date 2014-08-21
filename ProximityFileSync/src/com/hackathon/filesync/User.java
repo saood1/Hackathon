@@ -4,7 +4,7 @@ import java.util.*;
 
 public class User {
 	private String m_userId;
-	private Client m_client;
+	private Clients m_client;
 	Map<String, UserFileMetaData> m_userFileMetaDataMap = new HashMap<String, UserFileMetaData>();
 	float x, y;
     public float getX() {
@@ -25,7 +25,7 @@ public class User {
 		this.uid = uid;
 	}
 
-	public User(String userId, Client client) {
+	public User(String userId, Clients client) {
 		super();
 		this.m_userId = userId;
 		this.m_client = client;
@@ -57,11 +57,11 @@ public class User {
 		this.m_userId = userId;
 	}
 
-	public Client getClient() {
+	public Clients getClient() {
 		return m_client;
 	}
 
-	public void setClient(Client client) {
+	public void setClient(Clients client) {
 		this.m_client = client;
 	}
 

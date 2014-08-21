@@ -8,7 +8,7 @@ import net.sf.json.JSONObject;
 
 import com.infomatiq.jsi.Point;
 
-public class Client {
+public class Clients {
 
 	public static void main(String[] args) throws IOException, InterruptedException {
 		final int portNo = CommonUtility.getMyPortNo();
