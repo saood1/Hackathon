@@ -62,21 +62,13 @@ public class CommonUtility {
 		    BufferedInputStream bis = new BufferedInputStream(fis);;
 		    bis.read(fileBytes);
 		    
-		    //Add the file payload to arraylist
-		    information.put("file", fileBytes);
+		    //Add the file payload to the map
+		    information.put(Constants.FILE, fileBytes);
 		    
 		    try{
-		    	ObjectOutputStream objOut = new ObjectOutputStream(socket.getOutputStream());
-		    	
-		    	//Start transfer
-		    	objOut.writeObject(information);
-		    	objOut.flush();
-				objOut.close();
+		    	sendBytesThroughSocket(hostIp, portNo, information);
 			}
-		    catch (IOException e){
-		    	System.out.println(e.getLocalizedMessage());
-		    }
-			finally{
+		 	finally{
 				fis.close();
 			    bis.close();
 			}
@@ -209,33 +201,6 @@ public class CommonUtility {
 	}
 	
 	/**
-	 * This method sends information to Server for processing
-	 * @param jsonString
-	 * @throws UnknownHostException
-	 * @throws IOException
-	 * @throws InterruptedException
-	 */
-	public static void sendClientInformationToServer(String jsonString) throws UnknownHostException, IOException, InterruptedException{
-		Socket socket = new Socket("<hostIp>", Constants.SERVER_PORT_NO);
-		HashMap<String, byte[]> information = new HashMap<String, byte[]>();
-		
-		try{
-			//Check if the socket connects to the given ip and ports
-			while(socket.isConnected()==false){
-				System.out.println("Waiting for the socket to open..");
-				TimeUnit.SECONDS.sleep(5);
-			}
-					
-			//Add the task to map
-			String task = "TASK:1";
-			information.put("string", task.getBytes());
-		}
-		finally{
-			socket.close();
-		}
-	}
-	
-	/**
 	 * Creates a shared directory under users home directory
 	 * @throws IOException
 	 */
@@ -249,4 +214,48 @@ public class CommonUtility {
 		
 	}
 	
+	
+	/**
+	 * This method sends information to Server for processing
+	 * @param jsonString
+	 * @throws UnknownHostException
+	 * @throws IOException
+	 * @throws InterruptedException
+	 */
+	public static void sendClientInformationToServer(String jsonString) throws UnknownHostException, IOException, InterruptedException{
+		HashMap<String, byte[]> information = new HashMap<String, byte[]>();
+		information.put(Constants.CLIENT_INFORMATION, jsonString.getBytes());
+		
+		//Start sending the byte information
+		sendBytesThroughSocket(Constants.SERVER_IP_ADDRESS, Constants.SERVER_PORT_NO, information);
+	}
+	
+	/**
+	 * Send byte information to through the connected socket
+	 * @param socket
+	 * @param information
+	 * @throws IOException
+	 * @throws InterruptedException 
+	 */
+	private static void sendBytesThroughSocket(String hostIP, int portNo, Object information) throws IOException, InterruptedException{
+		Socket socket = new Socket(hostIP, portNo);
+		
+		try{
+			//Check if the socket connects to the given ip and ports
+			while(socket.isConnected()==false){
+				System.out.println("Waiting for the socket to open..");
+				TimeUnit.SECONDS.sleep(5);
+			}
+			
+			//Start transfer
+	    	ObjectOutputStream objOut = new ObjectOutputStream(socket.getOutputStream());
+	    	objOut.writeObject(information);
+	    	objOut.flush();
+			objOut.close();
+				
+		}
+		finally{
+			socket.close();	
+		}
+	}
 }

@@ -11,10 +11,15 @@ public class Constants {
 	public static final String IP_ADDRESS                   = "IP_ADDRESS";
 	public static final String CORDINATES                   = "CORDINATES";
 	public static final String USER_ID                      = "USER_ID";
+	public static final String UUID                         = "UUID";
 	
 	//JSON Task keys
 	public static final String CLIENT_INFORMATION           = "CLIENT_INFORMATION";
 	public static final String TASK_INFORMATION             = "TASK_INFORMATION";
+	public static final String SEND_FILE                    = "SEND_FILE";
+	public static final String RECEIVE_FILE                 = "RECEIVE_FILE";
+	
+	public static final String FILE                         = "FILE";
 	
 	//Shared dir name
 	public static final String SHARED_DIR                   = "/hackathon_share";
