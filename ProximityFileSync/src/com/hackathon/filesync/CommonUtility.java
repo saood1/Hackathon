@@ -237,7 +237,7 @@ public class CommonUtility {
 						JSONObject jo = new JSONObject(s);
 						System.out.println(jo.toString());
 					}
-					
+
 					//Server receives Share request using which it checks the nearest node
 					else if (infoMap.containsKey(Constants.SERVER_SHARE_REQUEST)) {
 						String s = new String(infoMap.get(Constants.SERVER_SHARE_REQUEST));
@@ -246,12 +246,12 @@ public class CommonUtility {
 						String recipient_user_id = jo.getString(Constants.RECIPIENT_USER_ID);
 						System.out.println(jo.toString());
 					}
-					
+
 					//Client receives send request using which it will send file bytes to the recipient
 					else if (infoMap.containsKey(Constants.CLIENT_FILE_SEND_REQUEST)) {
-						
+
 					}
-					
+
 					//Client receives file recieve request using which it downlaods the file bytes
 					else if (infoMap.containsKey(Constants.CLIENT_FILE_RECEIEVE_REQUEST)) {
 						String s = new String(infoMap.get(Constants.CLIENT_FILE_RECEIEVE_REQUEST));
@@ -297,11 +297,11 @@ public class CommonUtility {
 		String val = InetAddress.getLocalHost().getHostAddress();
 		return val;
 	}
-	
+
 	public Boolean getClientState() {
 		return state;
 	}
-	
+
 	public void setClientState(Boolean value) {
 		state = value;
 	}
@@ -324,7 +324,7 @@ public class CommonUtility {
 	public void setMyGeoCoordinates(Point updatedLoc){
 		cord = updatedLoc;
 	}
-	
+
 	/**
 	 * @return a random integer between the low-high range
 	 */
@@ -422,8 +422,8 @@ public class CommonUtility {
 	 * @param list
 	 * @return
 	 */
-	public static User createUser(ClientData client, String userId,	List<UserFileMetaData> list) {
-		User user = new User(userId, client);
+	public static User createUser(ClientData client, String userId,	Integer uid,List<UserFileMetaData> list) {
+		User user = new User(userId, uid, client);
 		return user;
 	}
 
@@ -476,8 +476,8 @@ public class CommonUtility {
 	 * @param list
 	 * @return
 	 */
-	public static User createUser(String userId, GeoLocation location, String ip, Integer port, List<UserFileMetaData> list) {
-		return createUser(createClient(location, ip, port), userId, list);
+	public static User createUser(String userId, Integer uid, GeoLocation location, String ip, Integer port, List<UserFileMetaData> list) {
+		return createUser(createClient(location, ip, port), userId, uid, list);
 	}
 
 	/**
@@ -490,16 +490,16 @@ public class CommonUtility {
 	 * @param fileNames
 	 * @return
 	 */
-	public static User createUserWithFileList(String userId, float lattitude, float longitude, String state, String ip, Integer port, 
+	public static User createUserWithFileList(String userId, Integer uid, float lattitude, float longitude, String state, String ip, Integer port, 
 			List<String> fileNames) {
-		
+
 		List<UserFileMetaData> list = new ArrayList<UserFileMetaData>();
 		for (String name : fileNames) {
 			UserFileMetaData userFileMetaData = createUserFileMetaData(name, 0,	name);
 			list.add(userFileMetaData);
 		}
 
-		User user = createUser(userId, lattitude, longitude, state, ip, port, list);
+		User user = createUser(userId, uid, lattitude, longitude, state, ip, port, list);
 		return user;
 	}
 
@@ -513,9 +513,9 @@ public class CommonUtility {
 	 * @param list
 	 * @return
 	 */
-	public static User createUser(String userId, float lattitude, float longitude, String state, String ip, Integer port, List<UserFileMetaData> list) {
+	public static User createUser(String userId, Integer uid, float lattitude, float longitude, String state, String ip, Integer port, List<UserFileMetaData> list) {
 		GeoLocation location = createGeoLocation(lattitude, longitude, "", "");
-		User user = createUser(userId, location, ip, port, list);
+		User user = createUser(userId, uid, location, ip, port, list);
 		return user;
 	}
 
@@ -529,7 +529,8 @@ public class CommonUtility {
 		float longitude;
 		String ip;
 		Integer port;
-		
+		Integer uid;
+
 		List<String> fileNames = new ArrayList<String>();
 
 		try {
@@ -539,6 +540,7 @@ public class CommonUtility {
 
 			JSONObject JsonObj = jarr.getJSONObject(0);
 			userId = JsonObj.getString(Constants.USER_ID);
+			uid = JsonObj.getInt(Constants.UUID);
 			ip = JsonObj.getString(Constants.IP_ADDRESS).toString();
 			port = JsonObj.getInt(Constants.PORT_NO);
 			lattitude = Float.parseFloat(JsonObj.get(Constants.XCORDINATES).toString());
@@ -549,7 +551,7 @@ public class CommonUtility {
 				fileNames.add(jFileList.get(i).toString());
 			}
 
-			return createUserWithFileList(userId, lattitude, longitude, "", ip, port, fileNames);
+			return createUserWithFileList(userId, uid, lattitude, longitude, "", ip, port, fileNames);
 		} 
 		catch (JSONException e) {
 			e.printStackTrace();
@@ -612,7 +614,7 @@ public class CommonUtility {
 
 		return mainObj.toString();
 	}
-	
+
 	/**
 	 * Function to insert into the database
 	 * @param jsonString
@@ -627,7 +629,7 @@ public class CommonUtility {
 			// get handle to "mydb"
 			DB db = mongoClient.getDB("mydb");
 			DBCollection collection = db.getCollection("UserCollection");
-			
+
 			try {
 				DBObject dbObject =  (DBObject) JSON.parse(jsonString);
 
@@ -686,7 +688,7 @@ public class CommonUtility {
 			return results;
 		}
 	}
-	
+
 	/**
 	 * Function to delete a record in database
 	 * @param id
@@ -724,7 +726,7 @@ public class CommonUtility {
 		Socket socket = socketConnect(Constants.SERVER_IP_ADDRESS , Constants.SERVER_PORT_NO);
 		sendBytesThroughSocket(socket , information);
 	}
-	
+
 	/**
 	 * @throws JSONException
 	 * @throws IOException

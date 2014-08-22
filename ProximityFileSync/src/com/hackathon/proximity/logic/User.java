@@ -11,7 +11,7 @@ import com.hackathon.filesync.Constants;
 public class User {
 	private String m_userId;
 	private ClientData m_client;
-	Map<String, UserFileMetaData> m_userFileMetaDataMap = new HashMap<String, UserFileMetaData>();
+	List<UserFileMetaData> m_userFileMetaDataList = new ArrayList<UserFileMetaData>();
 	float x, y;
 	public float getX() {
 		return m_client.getLocation().getLattitude();
@@ -31,32 +31,29 @@ public class User {
 		this.uid = uid;
 	}
 
-	public User(String userId, ClientData client) {
+	public User(String userId, Integer uid, ClientData client) {
 		super();
 		this.m_userId = userId;
 		this.m_client = client;
+		this.uid = uid;
 	}
 
 	public String getUserId() {
 		return m_userId;
 	}
 
-	public UserFileMetaData getUserFileByChecksum(String checksum)
-	{
-		return m_userFileMetaDataMap.get(checksum);
-	}
-	public Map<String, UserFileMetaData> getUserFileMetaDataMap() {
-		return m_userFileMetaDataMap;
+	public List<UserFileMetaData> getUserFileMetaDataList() {
+		return m_userFileMetaDataList;
 	}
 
 	public void addFileMetaData(UserFileMetaData userFileMetaData)
 	{
-		m_userFileMetaDataMap.put(userFileMetaData.getChecksum(), userFileMetaData);
+		m_userFileMetaDataList.add(userFileMetaData);
 	}
 
 	public void setUserFileMetaDataList(
-			Map<String, UserFileMetaData> userFileMetaDataList) {
-		this.m_userFileMetaDataMap.putAll(userFileMetaDataList);
+			List<UserFileMetaData> userFileMetaDataList) {
+		this.m_userFileMetaDataList.addAll(userFileMetaDataList);
 	}
 
 	public void setUserId(String userId) {
@@ -70,5 +67,4 @@ public class User {
 	public void setClient(ClientData client) {
 		this.m_client = client;
 	}
-	
 }
