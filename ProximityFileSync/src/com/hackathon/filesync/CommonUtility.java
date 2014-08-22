@@ -25,11 +25,37 @@ import com.hackathon.proximity.logic.UserFileMetaData;
 import com.infomatiq.jsi.Point;
 import com.infomatiq.jsi.Rectangle;
 
+//Mongo packages
+import com.mongodb.DB;
+import com.mongodb.DBCollection;
+import com.mongodb.DBCursor;
+import com.mongodb.MongoClient;
+import com.mongodb.MongoException;
+import com.mongodb.BasicDBObject;
+import com.mongodb.DBObject;
+import com.mongodb.MongoClient;
+import com.mongodb.MongoException;
+import com.mongodb.util.JSON;
+import com.mongodb.util.JSONParseException;
+
+import java.net.UnknownHostException;
+import java.util.ArrayList;
+import java.util.List;
+
+
 /**
  * This class holds all common functionality that can be used by server and
  * client.
  * 
  * @author mohamed.khan
+ *
+ */
+/**
+ * @author pavan.yadav
+ *
+ */
+/**
+ * @author pavan.yadav
  *
  */
 public class CommonUtility {
@@ -370,4 +396,120 @@ public class CommonUtility {
 
 	}
 
+
+	//Function to insert into the database
+	/**
+	 * @param jsonString
+	 * @return success/failure
+	 * @throws UnknownHostException
+	 */
+	public static boolean Add(String jsonString) throws UnknownHostException {
+	  try{
+	      // connect to the local database server
+	      MongoClient mongoClient = new MongoClient();
+
+	      // get handle to "mydb"
+	      DB db = mongoClient.getDB("mydb");
+
+	      // Authenticate - optional
+	      // boolean auth = db.authenticate("foo", "bar");
+
+	      DBCollection collection = db.getCollection("UserCollection");
+	      try
+	      {
+	          DBObject dbObject =  (DBObject) JSON.parse(jsonString);
+
+	          int id = (Integer) dbObject.get("UUID");
+
+	          BasicDBObject searchQuery = new BasicDBObject();
+	          searchQuery.put("UUID", id);
+	          DBObject cursor = collection.findOne(searchQuery);
+	          if(cursor != null)
+	          {
+	              collection.update(searchQuery, dbObject);
+	              return true;
+	          }
+
+	          collection.insert(dbObject);
+	          return true;
+	      }
+	      catch(JSONParseException e){
+
+	      System.out.println("error");
+	      return false;
+	      }
+	  }
+	  catch(MongoException e)
+	  {
+
+	      System.out.println("error");
+	      e.printStackTrace();
+	      return false;
+	  }
+	}
+
+
+	//Function to Extract from the database
+
+	static List<String> results = new ArrayList<String>();
+
+	/**
+	 * @return List of json strings in the database
+	 * @throws UnknownHostException
+	 */
+	public static List<String> Extract() throws UnknownHostException {
+	  try
+	  {
+	      // connect to the local database server
+	      MongoClient mongoClient = new MongoClient();
+
+	      // get handle to "mydb"
+	      DB db = mongoClient.getDB("mydb");
+
+	      // Authenticate - optional
+	      // boolean auth = db.authenticate("foo", "bar");
+
+	      DBCollection collection = db.getCollection("UserCollection");
+
+	      DBCursor cursor = collection.find();
+
+
+	      while(cursor.hasNext()) {
+	          results.add(cursor.next().toString());
+	      }
+	      return results;
+
+	  }
+	  catch(MongoException e)
+	  {
+	      e.printStackTrace();
+	      return results;
+	  }
+	}
+	// Function to delete a record in database
+	public static boolean delete(int id) throws UnknownHostException 
+	{
+		try{
+			// connect to the local database server
+			MongoClient mongoClient = new MongoClient();
+
+			// get handle to "mydb"
+			DB db = mongoClient.getDB("mydb");
+
+			// Authenticate - optional
+			// boolean auth = db.authenticate("foo", "bar");
+
+			DBCollection collection = db.getCollection("UserCollection");
+			BasicDBObject document = new BasicDBObject();
+			document.put("UUID", id);
+				collection.remove(document);
+				return true;
+			}
+			catch(JSONParseException e){
+
+				System.out.println("error");
+				return false;
+			}
+	}
+	
 }
