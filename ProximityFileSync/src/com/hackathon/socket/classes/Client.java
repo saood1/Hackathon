@@ -27,18 +27,7 @@ public class Client {
 		};
 		
 		socket.start();
-		
-		//Create users shared directory if not already created
-		CommonUtility.getInstance().createUserSharedDir(Constants.SHARED_DIR);
-		
-		//Create client info json string
-		String jsonClientInfoString = CommonUtility.getInstance().constructJSONClientInformation();
-		System.out.println("JSON String = " + jsonClientInfoString.toString());
-		
-		//CommonUtility.sendFile("127.0.0.1", "127.0.0.1", portNo, userDirPath + "a.pdf");
-		
-		//Send the client information to the server
-		CommonUtility.getInstance().sendClientInformationToServer(Constants.CLIENT_INFORMATION, jsonClientInfoString);
+		CommonUtility.getInstance().initializeFileSync();
 	}
 
 }

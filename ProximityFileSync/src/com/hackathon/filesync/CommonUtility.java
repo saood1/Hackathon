@@ -71,6 +71,18 @@ public class CommonUtility {
 		return instance;
 	}
 	
+	public void initializeFileSync() throws UnknownHostException, IOException, InterruptedException, JSONException{
+		//Create users shared directory if not already created
+		createUserSharedDir(Constants.SHARED_DIR);
+		
+		//Create client info json string
+		String jsonClientInfoString = constructJSONClientInformation();
+		System.out.println("JSON String = " + jsonClientInfoString.toString());
+		
+		//Send the client information to the server
+		sendClientInformationToServer(Constants.CLIENT_INFORMATION, jsonClientInfoString);
+	}
+	
 	/**
 	 * Create a socket connection, if the connection fails keep re-trying every
 	 * 3 seconds until its connected
@@ -137,8 +149,7 @@ public class CommonUtility {
 			mainObj.put(Constants.FILE_DETAILS, ja);
 
 			// Add the task to map
-			information.put(Constants.RECEIVE_FILE, mainObj.toString()
-					.getBytes());
+			information.put(Constants.RECEIVE_FILE, mainObj.toString().getBytes());
 
 			// Initialize the byte array for transfer
 			byte[] fileBytes = new byte[(int) length];
@@ -197,15 +208,14 @@ public class CommonUtility {
 			if(currentPort==null)
 				currentPort = portNo;
 			
-			ServerSocket serverSocket = new ServerSocket(portNo);
+			ServerSocket serverSocket = new ServerSocket(currentPort);
 
 			try {
 				while (true) {
 					Socket socket = serverSocket.accept();
 					System.out.println("Accepted connection : " + socket);
 
-					ObjectInputStream objInp = new ObjectInputStream(
-							socket.getInputStream());
+					ObjectInputStream objInp = new ObjectInputStream(socket.getInputStream());
 					HashMap<String, byte[]> infoMap = (HashMap<String, byte[]>) objInp.readObject();
 
 					/*
@@ -213,23 +223,20 @@ public class CommonUtility {
 					 * various transactions
 					 */
 					if (infoMap.containsKey(Constants.CLIENT_INFORMATION)) {
-						
-
+						String s = new String(infoMap.get(Constants.CLIENT_INFORMATION));
+						JSONObject jo = new JSONObject(s);
+						System.out.println(jo.toString());
 					} 
 					else if (infoMap.containsKey(Constants.SEND_FILE)) {
 
 					} 
 					else if (infoMap.containsKey(Constants.RECEIVE_FILE)) {
-						String s = new String(
-								infoMap.get(Constants.RECEIVE_FILE));
+						String s = new String(infoMap.get(Constants.RECEIVE_FILE));
 						JSONObject jo = new JSONObject(s);
-						JSONArray jarr = jo
-								.getJSONArray(Constants.FILE_DETAILS);
+						JSONArray jarr = jo.getJSONArray(Constants.FILE_DETAILS);
 
-						String fileName = jarr.getJSONObject(0).getString(
-								Constants.FILE_NAME);
-						String from = jarr.getJSONObject(0).getString(
-								Constants.FROM);
+						String fileName = jarr.getJSONObject(0).getString(Constants.FILE_NAME);
+						String from = jarr.getJSONObject(0).getString(Constants.FROM);
 
 						byte fileBytes[] = infoMap.get(Constants.FILE);
 						recieveFile(fileBytes, fileName);
@@ -237,12 +244,15 @@ public class CommonUtility {
 
 					objInp.close();
 				}
-			} catch (IOException e) {
+			} 
+			catch (IOException e) {
 				System.out.println("An IOException occured " + e.getMessage());
-			} finally {
+			} 
+			finally {
 				serverSocket.close();
 			}
-		} catch (Exception e) {
+		} 
+		catch (Exception e) {
 			e.printStackTrace();
 		}
 	}
@@ -440,8 +450,13 @@ public class CommonUtility {
 		}
 
 	}
-
 	
+	/**
+	 * Returns a JSON array from the list
+	 * @param list
+	 * @return
+	 * @throws JSONException
+	 */
 	public String getJSONArrayStringFromArrayList(ArrayList<String> list) throws JSONException{
 		JSONArray jArr = new JSONArray();
 		if(list!=null && list.size()>0){
@@ -473,7 +488,7 @@ public class CommonUtility {
 		ja.put(jo);
 
 		JSONObject mainObj = new JSONObject();
-		mainObj.put(Constants.CLIENT_INFORMATION, ja);
+		mainObj.put(Constants.CLIENT_DETAILS, ja);
 		
 		return mainObj.toString();
 	}

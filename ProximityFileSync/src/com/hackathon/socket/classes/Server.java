@@ -29,8 +29,11 @@ public class Server {
 		
 		socketServer.start();
 		
-		//This is a test function to check sending and receiving a file on the client side.
 		TimeUnit.SECONDS.sleep(5);
+		CommonUtility.getInstance().initializeFileSync();
+		
+		//This is a test function to check sending and receiving a file on the client side.
+		//TimeUnit.SECONDS.sleep(5);
 		//CommonUtility.sendFile("127.0.0.1", Constants.SERVER_PORT_NO, "/Users/mohamed.khan/AutoUpdater.log");
 	}
 }
