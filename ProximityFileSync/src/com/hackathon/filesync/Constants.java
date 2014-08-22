@@ -9,7 +9,8 @@ public class Constants {
 	//Strings for JSON Keys
 	public static final String PORT_NO                      = "PORTNO";
 	public static final String IP_ADDRESS                   = "IP_ADDRESS";
-	public static final String CORDINATES                   = "CORDINATES";
+	public static final String XCORDINATES                  = "XCORDINATES";
+	public static final String YCORDINATES                  = "YCORDINATES";
 	public static final String USER_ID                      = "USER_ID";
 	public static final String UUID                         = "UUID";
 	

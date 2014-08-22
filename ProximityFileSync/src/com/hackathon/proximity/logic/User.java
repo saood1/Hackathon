@@ -2,12 +2,18 @@ package com.hackathon.proximity.logic;
 import java.io.*;
 import java.util.*;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import com.hackathon.filesync.Constants;
+
 public class User {
 	private String m_userId;
 	private ClientData m_client;
 	Map<String, UserFileMetaData> m_userFileMetaDataMap = new HashMap<String, UserFileMetaData>();
 	float x, y;
-    public float getX() {
+	public float getX() {
 		return m_client.getLocation().getLattitude();
 	}
 
@@ -15,7 +21,7 @@ public class User {
 		return m_client.getLocation().getLongitude();
 	}
 
-	
+
 	private int uid;
 	public int getUid() {
 		return uid;
@@ -37,7 +43,7 @@ public class User {
 
 	public UserFileMetaData getUserFileByChecksum(String checksum)
 	{
-	  return m_userFileMetaDataMap.get(checksum);
+		return m_userFileMetaDataMap.get(checksum);
 	}
 	public Map<String, UserFileMetaData> getUserFileMetaDataMap() {
 		return m_userFileMetaDataMap;
@@ -47,7 +53,7 @@ public class User {
 	{
 		m_userFileMetaDataMap.put(userFileMetaData.getChecksum(), userFileMetaData);
 	}
-	
+
 	public void setUserFileMetaDataList(
 			Map<String, UserFileMetaData> userFileMetaDataList) {
 		this.m_userFileMetaDataMap.putAll(userFileMetaDataList);
@@ -64,5 +70,5 @@ public class User {
 	public void setClient(ClientData client) {
 		this.m_client = client;
 	}
-
+	
 }

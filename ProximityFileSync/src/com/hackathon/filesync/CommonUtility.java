@@ -57,7 +57,7 @@ public class CommonUtility {
 	private int uuid;
 	private ArrayList<String> fileList;
 	private static CommonUtility instance = null;
-		
+
 	/**
 	 * Preventing object creation for this class
 	 * @throws UnknownHostException
@@ -70,8 +70,8 @@ public class CommonUtility {
 		uuid = getMyUserID().hashCode();
 		fileList = getMyFiles(Constants.SHARED_DIR);
 	}
-	
-	
+
+
 	/**
 	 * Creates a static singleton instance of this class
 	 * @return
@@ -83,19 +83,19 @@ public class CommonUtility {
 		}
 		return instance;
 	}
-	
+
 	public void initializeFileSync() throws UnknownHostException, IOException, InterruptedException, JSONException{
 		//Create users shared directory if not already created
 		createUserSharedDir(Constants.SHARED_DIR);
-		
+
 		//Create client info json string
 		String jsonClientInfoString = constructJSONClientInformation();
 		System.out.println("JSON String = " + jsonClientInfoString.toString());
-		
+
 		//Send the client information to the server
 		sendClientInformationToServer(Constants.CLIENT_INFORMATION, jsonClientInfoString);
 	}
-	
+
 	/**
 	 * Create a socket connection, if the connection fails keep re-trying every
 	 * 3 seconds until its connected
@@ -140,7 +140,7 @@ public class CommonUtility {
 	public void sendFile(String fromIp, String destIp, int destPortNo,
 			String filePath) throws UnknownHostException, IOException,
 			InterruptedException, JSONException {
-		
+
 		Socket socket = socketConnect(destIp, destPortNo);
 		HashMap<String, byte[]> information = new HashMap<String, byte[]>();
 
@@ -208,7 +208,7 @@ public class CommonUtility {
 			System.out.println(e.getLocalizedMessage());
 		}
 	}
-	
+
 
 	/**
 	 * Starts the server socket
@@ -220,7 +220,7 @@ public class CommonUtility {
 		try {
 			if(currentPort==null)
 				currentPort = portNo;
-			
+
 			ServerSocket serverSocket = new ServerSocket(currentPort);
 
 			try {
@@ -341,7 +341,7 @@ public class CommonUtility {
 	 */
 	public void sendClientInformationToServer(String key, String jsonString)
 			throws UnknownHostException, IOException, InterruptedException {
-		
+
 		HashMap<String, byte[]> information = new HashMap<String, byte[]>();
 		information.put(key, jsonString.getBytes());
 		Socket socket = socketConnect(Constants.SERVER_IP_ADDRESS, Constants.SERVER_PORT_NO);
@@ -350,7 +350,7 @@ public class CommonUtility {
 		sendBytesThroughSocket(socket, information);
 	}
 
-	
+
 	/**
 	 * Scan all the files in a given dir
 	 * @param dirPath
@@ -361,20 +361,20 @@ public class CommonUtility {
 
 		ArrayList<String> list = new ArrayList<String>();
 		File files[] = folder.listFiles();
-		
+
 		if(files!=null && files.length>0){
 			for (final File fileEntry : folder.listFiles()) {
 				if (!fileEntry.isDirectory()) {
 					list.add(fileEntry.getName());
 				}
 			}
-				
+
 		}
-		
+
 		return list;
 	}
-	
-	
+
+
 	/**
 	 * Send byte information to through the connected socket
 	 * 
@@ -398,72 +398,107 @@ public class CommonUtility {
 		}
 	}
 
-	
-	
-	public User createUser(ClientData client, String userId,
+	public static User createUser(ClientData client, String userId,
 			List<UserFileMetaData> list) {
 		User user = new User(userId, client);
 		return user;
 	}
 
-	public Rectangle getPointRectangle(float x, float y) {
+	public static Rectangle getPointRectangle(float x, float y) {
 		Rectangle r = new Rectangle(x, y, x + 0.5f, y + 0.5f);
 		return r;
 	}
 
-	public GeoLocation createGeoLocation(float lattitude,
+	public static GeoLocation createGeoLocation(float lattitude,
 			float longitude, String state, String country) {
 
 		return new GeoLocation(lattitude, longitude, state, country);
 	}
 
-	public ClientData createClient(GeoLocation location, String ip,
+	public static ClientData createClient(GeoLocation location, String ip,
 			Integer port) {
 		return new ClientData(location, ip, port);
 	}
 
-	public UserFileMetaData createUserFileMetaData(String checksum,
+	public static UserFileMetaData createUserFileMetaData(String checksum,
 			int version, String fileName) {
 		return new UserFileMetaData(checksum, version, fileName);
 	}
 
-	public User createUser(String userId, GeoLocation location,
+	public static User createUser(String userId, GeoLocation location,
 			String ip, Integer port, List<UserFileMetaData> list) {
 
 		return createUser(createClient(location, ip, port), userId, list);
 	}
 
-	public void copyClientInfo(ClientData src, ClientData dest) {
-		dest.setIp(src.getIp());
-		dest.setLocation(src.getLocation());
-		dest.setPort(src.getPort());
+	public static User createUserWithFileList(String userId, float lattitude,
+			float longitude, String state, String ip, Integer port,
+			List<String> fileNames) {
+		List<UserFileMetaData> list = new ArrayList<UserFileMetaData>();
+		for (String name : fileNames) {
+			UserFileMetaData userFileMetaData = createUserFileMetaData(name, 0,
+					name);
+			list.add(userFileMetaData);
+
+		}
+
+		User user = createUser(userId, lattitude, longitude, state, ip, port,
+				list);
+		return user;
 	}
 
-	public void copyFileMetaDataInfo(UserFileMetaData src, UserFileMetaData dest) {
-		dest.setChecksum(src.getChecksum());
-		dest.setFileName(src.getFileName());
-		dest.setVersion(src.getVersion());
+	public static User createUser(String userId, float lattitude,
+			float longitude, String state, String ip, Integer port,
+			List<UserFileMetaData> list) {
+		GeoLocation location = createGeoLocation(lattitude, longitude, "", "");
+
+		User user = createUser(userId, location, ip, port, list);
+		return user;
 	}
 
-	public double distance(float x1, float y1, float x2, float y2) {
+
+	public static User createUser(String jUserInfo) {
+		String userId;
+		float lattitude;
+		float longitude;
+		String ip;
+		Integer port;
+		List<String> fileNames = new ArrayList<String>();
+
+		try {
+
+			JSONObject jo;
+
+			jo = new JSONObject(jUserInfo);
+			JSONArray jarr = jo.getJSONArray(Constants.CLIENT_DETAILS);
+
+			JSONObject JsonObj = jarr.getJSONObject(0);
+			userId = JsonObj.getString(Constants.USER_ID);
+			ip = JsonObj.getString(Constants.IP_ADDRESS).toString();
+			port = JsonObj.getInt(Constants.PORT_NO);
+			lattitude = Float.parseFloat(JsonObj.get(Constants.XCORDINATES).toString());
+			longitude = Float.parseFloat(JsonObj.get(Constants.YCORDINATES).toString());
+
+			JSONArray jFileList = new JSONArray(JsonObj.get(Constants.FILES).toString());
+			for(int i = 0 ; i < jFileList.length() ; i++){
+				fileNames.add(jFileList.get(i).toString());
+			}
+
+			return createUserWithFileList(userId, lattitude, longitude, "", ip, port, fileNames);
+
+		} catch (JSONException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
+		return null;
+	}
+
+	public static double distance(float x1, float y1, float x2, float y2) {
 		return java.awt.geom.Point2D.distance(x1, y1, x2, y2);
 	}
 
-	public void copyUserInfo(User src, User dest) {
-		dest.setUserId(src.getUserId());
 
-		copyClientInfo(src.getClient(), dest.getClient());
-		for (UserFileMetaData userFileMetaDataSrc : src
-				.getUserFileMetaDataMap().values()) {
-			UserFileMetaData userFileMetaDataDest = dest
-					.getUserFileByChecksum(userFileMetaDataSrc.getChecksum());
-			if (null != userFileMetaDataDest) {
-				copyFileMetaDataInfo(userFileMetaDataSrc, userFileMetaDataDest);
-			}
-		}
-
-	}
-	
 	/**
 	 * Returns a JSON array from the list
 	 * @param list
@@ -479,7 +514,7 @@ public class CommonUtility {
 		}
 		return jArr.toString();
 	}
-	
+
 	/**
 	 * Returns a JSON String from Client Information
 	 * @return
@@ -487,22 +522,23 @@ public class CommonUtility {
 	 * @throws JSONException
 	 */
 	public String constructJSONClientInformation() throws UnknownHostException, JSONException{
-		
+
 		//Create the JSON Object
 		JSONObject jo = new JSONObject();
 		jo.put(Constants.USER_ID, userID);
 		jo.put(Constants.UUID, uuid);
 		jo.put(Constants.PORT_NO, portNo);
 		jo.put(Constants.IP_ADDRESS, ipAddress);
-		jo.put(Constants.CORDINATES, cord.x + "|" + cord.y);
+		jo.put(Constants.XCORDINATES, cord.x);
+		jo.put(Constants.YCORDINATES, cord.y);
 		jo.put(Constants.FILES, getJSONArrayStringFromArrayList(fileList));
-		
+
 		JSONArray ja = new JSONArray();
 		ja.put(jo);
 
 		JSONObject mainObj = new JSONObject();
 		mainObj.put(Constants.CLIENT_DETAILS, ja);
-		
+
 		return mainObj.toString();
 	}
 	//Function to insert into the database
@@ -512,48 +548,48 @@ public class CommonUtility {
 	 * @throws UnknownHostException
 	 */
 	public static boolean Add(String jsonString) throws UnknownHostException {
-	  try{
-	      // connect to the local database server
-	      MongoClient mongoClient = new MongoClient();
+		try{
+			// connect to the local database server
+			MongoClient mongoClient = new MongoClient();
 
-	      // get handle to "mydb"
-	      DB db = mongoClient.getDB("mydb");
+			// get handle to "mydb"
+			DB db = mongoClient.getDB("mydb");
 
-	      // Authenticate - optional
-	      // boolean auth = db.authenticate("foo", "bar");
+			// Authenticate - optional
+			// boolean auth = db.authenticate("foo", "bar");
 
-	      DBCollection collection = db.getCollection("UserCollection");
-	      try
-	      {
-	          DBObject dbObject =  (DBObject) JSON.parse(jsonString);
+			DBCollection collection = db.getCollection("UserCollection");
+			try
+			{
+				DBObject dbObject =  (DBObject) JSON.parse(jsonString);
 
-	          int id = (Integer) dbObject.get("UUID");
+				int id = (Integer) dbObject.get("UUID");
 
-	          BasicDBObject searchQuery = new BasicDBObject();
-	          searchQuery.put("UUID", id);
-	          DBObject cursor = collection.findOne(searchQuery);
-	          if(cursor != null)
-	          {
-	              collection.update(searchQuery, dbObject);
-	              return true;
-	          }
+				BasicDBObject searchQuery = new BasicDBObject();
+				searchQuery.put("UUID", id);
+				DBObject cursor = collection.findOne(searchQuery);
+				if(cursor != null)
+				{
+					collection.update(searchQuery, dbObject);
+					return true;
+				}
 
-	          collection.insert(dbObject);
-	          return true;
-	      }
-	      catch(JSONParseException e){
+				collection.insert(dbObject);
+				return true;
+			}
+			catch(JSONParseException e){
 
-	      System.out.println("error");
-	      return false;
-	      }
-	  }
-	  catch(MongoException e)
-	  {
+				System.out.println("error");
+				return false;
+			}
+		}
+		catch(MongoException e)
+		{
 
-	      System.out.println("error");
-	      e.printStackTrace();
-	      return false;
-	  }
+			System.out.println("error");
+			e.printStackTrace();
+			return false;
+		}
 	}
 
 
@@ -566,33 +602,33 @@ public class CommonUtility {
 	 * @throws UnknownHostException
 	 */
 	public static List<String> Extract() throws UnknownHostException {
-	  try
-	  {
-	      // connect to the local database server
-	      MongoClient mongoClient = new MongoClient();
+		try
+		{
+			// connect to the local database server
+			MongoClient mongoClient = new MongoClient();
 
-	      // get handle to "mydb"
-	      DB db = mongoClient.getDB("mydb");
+			// get handle to "mydb"
+			DB db = mongoClient.getDB("mydb");
 
-	      // Authenticate - optional
-	      // boolean auth = db.authenticate("foo", "bar");
+			// Authenticate - optional
+			// boolean auth = db.authenticate("foo", "bar");
 
-	      DBCollection collection = db.getCollection("UserCollection");
+			DBCollection collection = db.getCollection("UserCollection");
 
-	      DBCursor cursor = collection.find();
+			DBCursor cursor = collection.find();
 
 
-	      while(cursor.hasNext()) {
-	          results.add(cursor.next().toString());
-	      }
-	      return results;
+			while(cursor.hasNext()) {
+				results.add(cursor.next().toString());
+			}
+			return results;
 
-	  }
-	  catch(MongoException e)
-	  {
-	      e.printStackTrace();
-	      return results;
-	  }
+		}
+		catch(MongoException e)
+		{
+			e.printStackTrace();
+			return results;
+		}
 	}
 	// Function to delete a record in database
 	public static boolean delete(int id) throws UnknownHostException 
@@ -610,13 +646,13 @@ public class CommonUtility {
 			DBCollection collection = db.getCollection("UserCollection");
 			BasicDBObject document = new BasicDBObject();
 			document.put("UUID", id);
-				collection.remove(document);
-				return true;
-			}
-			catch(JSONParseException e){
+			collection.remove(document);
+			return true;
+		}
+		catch(JSONParseException e){
 
-				System.out.println("error");
-				return false;
-			}
+			System.out.println("error");
+			return false;
+		}
 	}
 }
