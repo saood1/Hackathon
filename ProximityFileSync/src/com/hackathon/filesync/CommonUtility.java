@@ -45,6 +45,11 @@ public class CommonUtility {
 	private ArrayList<String> fileList;
 	private static CommonUtility instance = null;
 	
+	
+	/**
+	 * Preventing object creation for this class
+	 * @throws UnknownHostException
+	 */
 	private CommonUtility() throws UnknownHostException{
 		portNo = getMyPortNo();
 		ipAddress = getMyIPAddress();
@@ -55,7 +60,11 @@ public class CommonUtility {
 	}
 	
 	
-	
+	/**
+	 * Creates a static singleton instance of this class
+	 * @return
+	 * @throws UnknownHostException
+	 */
 	public static CommonUtility getInstance() throws UnknownHostException{
 		if(instance==null){
 			instance = new CommonUtility();
@@ -107,6 +116,7 @@ public class CommonUtility {
 	public void sendFile(String fromIp, String destIp, int destPortNo,
 			String filePath) throws UnknownHostException, IOException,
 			InterruptedException, JSONException {
+		
 		Socket socket = socketConnect(destIp, destPortNo);
 		HashMap<String, byte[]> information = new HashMap<String, byte[]>();
 
@@ -468,6 +478,5 @@ public class CommonUtility {
 		
 		return mainObj.toString();
 	}
-	
-	
+
 }
