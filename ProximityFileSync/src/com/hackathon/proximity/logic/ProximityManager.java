@@ -113,6 +113,11 @@ public class ProximityManager {
 		m_mapFromChecksumToProximityUsersRTree.clear();
 	}
 
+	public User getNearestUserToDest(String checksum, Integer uid)
+	{
+		User destUser = m_mapFromIdToUser.get(uid);
+		return getNearestUserToDest(checksum, destUser);
+	}
 
 	public User getNearestUserToDest(String checksum, User destUser)
 	{
