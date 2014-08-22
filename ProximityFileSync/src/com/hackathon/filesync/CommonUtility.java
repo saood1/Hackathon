@@ -51,6 +51,7 @@ public class CommonUtility {
 	private int portNo;
 	private String ipAddress;
 	private Point cord;
+	private Boolean state = true;
 	private String userID;
 	private int uuid;
 	private ArrayList<String> fileList;
@@ -67,6 +68,7 @@ public class CommonUtility {
 		userID = getMyUserID();
 		uuid = getMyUserID().hashCode();
 		fileList = getMyFiles(Constants.SHARED_DIR);
+		state = false;
 	}
 
 
@@ -87,11 +89,12 @@ public class CommonUtility {
 		createUserSharedDir(Constants.SHARED_DIR);
 
 		//Create client info json string
+		setClientState(true);
 		String jsonClientInfoString = constructJSONClientInformation();
 		System.out.println("JSON String = " + jsonClientInfoString.toString());
 
 		//Send the client information to the server
-		sendClientInformationToServer(Constants.CLIENT_INFORMATION, jsonClientInfoString);
+		sendClientInformationToServer(Constants.SERVER_SAVE_CLIENT_INFORMATION, jsonClientInfoString);
 	}
 
 	/**
@@ -111,12 +114,13 @@ public class CommonUtility {
 			try {
 				socket = new Socket(hostIp, portNo);
 				connected = true;
-			} catch (Exception e) {
+			} 
+			catch (Exception e) {
 				connected = false;
 				try {
 					TimeUnit.SECONDS.sleep(3);
-				} catch (InterruptedException e1) {
-					// TODO Auto-generated catch block
+				} 
+				catch (InterruptedException e1) {
 					e1.printStackTrace();
 				}
 			}
@@ -135,15 +139,11 @@ public class CommonUtility {
 	 * @throws InterruptedException
 	 * @throws JSONException
 	 */
-	public void sendFile(String fromIp, String destIp, int destPortNo,
-			String filePath) throws UnknownHostException, IOException,
-			InterruptedException, JSONException {
-
+	public void sendFile(String fromIp, String destIp, int destPortNo, String filePath) throws UnknownHostException, IOException, InterruptedException, JSONException {
 		Socket socket = socketConnect(destIp, destPortNo);
 		HashMap<String, byte[]> information = new HashMap<String, byte[]>();
 
 		try {
-
 			// Read the file
 			File file = new File(filePath);
 			long length = file.length();
@@ -176,11 +176,13 @@ public class CommonUtility {
 
 			try {
 				sendBytesThroughSocket(socket, information);
-			} finally {
+			} 
+			finally {
 				fis.close();
 				bis.close();
 			}
-		} finally {
+		} 
+		finally {
 			socket.close();
 		}
 	}
@@ -233,16 +235,16 @@ public class CommonUtility {
 					 * Following conditional checks are written to handle
 					 * various transactions
 					 */
-					if (infoMap.containsKey(Constants.CLIENT_INFORMATION)) {
-						String s = new String(infoMap.get(Constants.CLIENT_INFORMATION));
+					if (infoMap.containsKey(Constants.SERVER_SAVE_CLIENT_INFORMATION)) {
+						String s = new String(infoMap.get(Constants.SERVER_SAVE_CLIENT_INFORMATION));
 						JSONObject jo = new JSONObject(s);
 						System.out.println(jo.toString());
 					} 
-					else if (infoMap.containsKey(Constants.SEND_FILE)) {
+					else if (infoMap.containsKey(Constants.CLIENT_FILE_SEND_REQUEST)) {
 
 					} 
-					else if (infoMap.containsKey(Constants.RECEIVE_FILE)) {
-						String s = new String(infoMap.get(Constants.RECEIVE_FILE));
+					else if (infoMap.containsKey(Constants.CLIENT_FILE_RECEIEVE_REQUEST)) {
+						String s = new String(infoMap.get(Constants.CLIENT_FILE_RECEIEVE_REQUEST));
 						JSONObject jo = new JSONObject(s);
 						JSONArray jarr = jo.getJSONArray(Constants.FILE_DETAILS);
 
@@ -285,6 +287,14 @@ public class CommonUtility {
 		String val = InetAddress.getLocalHost().getHostAddress();
 		return val;
 	}
+	
+	public Boolean getClientState() {
+		return state;
+	}
+	
+	public void setClientState(Boolean value) {
+		state = value;
+	}
 
 	/**
 	 * @return 5 digit port no which is unused by the system
@@ -301,6 +311,10 @@ public class CommonUtility {
 		return new Point(getRandomInteger(0, 30), getRandomInteger(0, 30));
 	}
 
+	public void setMyGeoCoordinates(Point updatedLoc){
+		cord = updatedLoc;
+	}
+	
 	/**
 	 * @return a random integer between the low-high range
 	 */
@@ -320,8 +334,7 @@ public class CommonUtility {
 	 * 
 	 * @throws IOException
 	 */
-	public void createUserSharedDir(String userDirPath)
-			throws IOException {
+	public void createUserSharedDir(String userDirPath)	throws IOException {
 		File dir = new File(userDirPath);
 
 		if (!dir.exists()) {
@@ -337,8 +350,7 @@ public class CommonUtility {
 	 * @throws IOException
 	 * @throws InterruptedException
 	 */
-	public void sendClientInformationToServer(String key, String jsonString)
-			throws UnknownHostException, IOException, InterruptedException {
+	public void sendClientInformationToServer(String key, String jsonString) throws UnknownHostException, IOException, InterruptedException {
 
 		HashMap<String, byte[]> information = new HashMap<String, byte[]>();
 		information.put(key, jsonString.getBytes());
@@ -381,8 +393,7 @@ public class CommonUtility {
 	 * @throws IOException
 	 * @throws InterruptedException
 	 */
-	private void sendBytesThroughSocket(Socket socket, Object information)
-			throws IOException, InterruptedException {
+	private void sendBytesThroughSocket(Socket socket, Object information) throws IOException, InterruptedException {
 
 		try {
 			// Start transfer
@@ -396,78 +407,128 @@ public class CommonUtility {
 		}
 	}
 
+	/**
+	 * @param client
+	 * @param userId
+	 * @param list
+	 * @return
+	 */
 	public static User createUser(ClientData client, String userId,
 			List<UserFileMetaData> list) {
 		User user = new User(userId, client);
 		return user;
 	}
 
+	/**
+	 * @param x
+	 * @param y
+	 * @return
+	 */
 	public static Rectangle getPointRectangle(float x, float y) {
 		Rectangle r = new Rectangle(x, y, x + 0.5f, y + 0.5f);
 		return r;
 	}
 
-	public static GeoLocation createGeoLocation(float lattitude,
-			float longitude, String state, String country) {
-
+	/**
+	 * @param lattitude
+	 * @param longitude
+	 * @param state
+	 * @param country
+	 * @return
+	 */
+	public static GeoLocation createGeoLocation(float lattitude, float longitude, String state, String country) {
 		return new GeoLocation(lattitude, longitude, state, country);
 	}
 
-	public static ClientData createClient(GeoLocation location, String ip,
-			Integer port) {
+	/**
+	 * @param location
+	 * @param ip
+	 * @param port
+	 * @return
+	 */
+	public static ClientData createClient(GeoLocation location, String ip, Integer port) {
 		return new ClientData(location, ip, port);
 	}
 
-	public static UserFileMetaData createUserFileMetaData(String checksum,
-			int version, String fileName) {
+	/**
+	 * @param checksum
+	 * @param version
+	 * @param fileName
+	 * @return
+	 */
+	public static UserFileMetaData createUserFileMetaData(String checksum, int version, String fileName) {
 		return new UserFileMetaData(checksum, version, fileName);
 	}
 
+	/**
+	 * @param userId
+	 * @param location
+	 * @param ip
+	 * @param port
+	 * @param list
+	 * @return
+	 */
 	public static User createUser(String userId, GeoLocation location,
 			String ip, Integer port, List<UserFileMetaData> list) {
 
 		return createUser(createClient(location, ip, port), userId, list);
 	}
 
-	public static User createUserWithFileList(String userId, float lattitude,
-			float longitude, String state, String ip, Integer port,
+	/**
+	 * @param userId
+	 * @param lattitude
+	 * @param longitude
+	 * @param state
+	 * @param ip
+	 * @param port
+	 * @param fileNames
+	 * @return
+	 */
+	public static User createUserWithFileList(String userId, float lattitude, float longitude, String state, String ip, Integer port, 
 			List<String> fileNames) {
+		
 		List<UserFileMetaData> list = new ArrayList<UserFileMetaData>();
 		for (String name : fileNames) {
-			UserFileMetaData userFileMetaData = createUserFileMetaData(name, 0,
-					name);
+			UserFileMetaData userFileMetaData = createUserFileMetaData(name, 0,	name);
 			list.add(userFileMetaData);
-
 		}
 
-		User user = createUser(userId, lattitude, longitude, state, ip, port,
-				list);
+		User user = createUser(userId, lattitude, longitude, state, ip, port, list);
 		return user;
 	}
 
-	public static User createUser(String userId, float lattitude,
-			float longitude, String state, String ip, Integer port,
-			List<UserFileMetaData> list) {
+	/**
+	 * @param userId
+	 * @param lattitude
+	 * @param longitude
+	 * @param state
+	 * @param ip
+	 * @param port
+	 * @param list
+	 * @return
+	 */
+	public static User createUser(String userId, float lattitude, float longitude, String state, String ip, Integer port, List<UserFileMetaData> list) {
 		GeoLocation location = createGeoLocation(lattitude, longitude, "", "");
-
 		User user = createUser(userId, location, ip, port, list);
 		return user;
 	}
 
-
+	/**
+	 * @param jUserInfo
+	 * @return
+	 */
 	public static User createUser(String jUserInfo) {
 		String userId;
 		float lattitude;
 		float longitude;
 		String ip;
 		Integer port;
+		
 		List<String> fileNames = new ArrayList<String>();
 
 		try {
 
-			JSONObject jo;
-
-			jo = new JSONObject(jUserInfo);
+			JSONObject jo = new JSONObject(jUserInfo);
 			JSONArray jarr = jo.getJSONArray(Constants.CLIENT_DETAILS);
 
 			JSONObject JsonObj = jarr.getJSONObject(0);
@@ -478,20 +539,26 @@ public class CommonUtility {
 			longitude = Float.parseFloat(JsonObj.get(Constants.YCORDINATES).toString());
 
 			JSONArray jFileList = new JSONArray(JsonObj.get(Constants.FILES).toString());
+			
 			for(int i = 0 ; i < jFileList.length() ; i++){
 				fileNames.add(jFileList.get(i).toString());
 			}
-
 			return createUserWithFileList(userId, lattitude, longitude, "", ip, port, fileNames);
 
-		} catch (JSONException e) {
-			// TODO Auto-generated catch block
+		} 
+		catch (JSONException e) {
 			e.printStackTrace();
 		}
-
 		return null;
 	}
 
+	/**
+	 * @param x1
+	 * @param y1
+	 * @param x2
+	 * @param y2
+	 * @return
+	 */
 	public static double distance(float x1, float y1, float x2, float y2) {
 		return java.awt.geom.Point2D.distance(x1, y1, x2, y2);
 	}
@@ -525,6 +592,7 @@ public class CommonUtility {
 		JSONObject jo = new JSONObject();
 		jo.put(Constants.USER_ID, userID);
 		jo.put(Constants.UUID, uuid);
+		jo.put(Constants.ONLINE, state);
 		jo.put(Constants.PORT_NO, portNo);
 		jo.put(Constants.IP_ADDRESS, ipAddress);
 		jo.put(Constants.XCORDINATES, cord.x);
@@ -539,8 +607,9 @@ public class CommonUtility {
 
 		return mainObj.toString();
 	}
-	//Function to insert into the database
+	
 	/**
+	 * Function to insert into the database
 	 * @param jsonString
 	 * @return success/failure
 	 * @throws UnknownHostException
@@ -552,13 +621,9 @@ public class CommonUtility {
 
 			// get handle to "mydb"
 			DB db = mongoClient.getDB("mydb");
-
-			// Authenticate - optional
-			// boolean auth = db.authenticate("foo", "bar");
-
 			DBCollection collection = db.getCollection("UserCollection");
-			try
-			{
+			
+			try {
 				DBObject dbObject =  (DBObject) JSON.parse(jsonString);
 
 				int id = (Integer) dbObject.get("UUID");
@@ -576,32 +641,26 @@ public class CommonUtility {
 				return true;
 			}
 			catch(JSONParseException e){
-
 				System.out.println("error");
 				return false;
 			}
 		}
-		catch(MongoException e)
-		{
-
+		catch(MongoException e){
 			System.out.println("error");
 			e.printStackTrace();
 			return false;
 		}
 	}
 
-
-	//Function to Extract from the database
-
 	static List<String> results = new ArrayList<String>();
 
 	/**
+	 * Function to Extract from the database
 	 * @return List of json strings in the database
 	 * @throws UnknownHostException
 	 */
 	public static List<String> Extract() throws UnknownHostException {
-		try
-		{
+		try	{
 			// connect to the local database server
 			MongoClient mongoClient = new MongoClient();
 
@@ -609,38 +668,33 @@ public class CommonUtility {
 			DB db = mongoClient.getDB("mydb");
 
 			// Authenticate - optional
-			// boolean auth = db.authenticate("foo", "bar");
-
 			DBCollection collection = db.getCollection("UserCollection");
-
 			DBCursor cursor = collection.find();
-
 
 			while(cursor.hasNext()) {
 				results.add(cursor.next().toString());
 			}
 			return results;
-
 		}
-		catch(MongoException e)
-		{
+		catch(MongoException e)	{
 			e.printStackTrace();
 			return results;
 		}
 	}
-	// Function to delete a record in database
-	public static boolean delete(int id) throws UnknownHostException 
-	{
+	
+	/**
+	 * Function to delete a record in database
+	 * @param id
+	 * @return
+	 * @throws UnknownHostException
+	 */
+	public static boolean delete(int id) throws UnknownHostException {
 		try{
 			// connect to the local database server
 			MongoClient mongoClient = new MongoClient();
 
 			// get handle to "mydb"
 			DB db = mongoClient.getDB("mydb");
-
-			// Authenticate - optional
-			// boolean auth = db.authenticate("foo", "bar");
-
 			DBCollection collection = db.getCollection("UserCollection");
 			BasicDBObject document = new BasicDBObject();
 			document.put("UUID", id);
@@ -648,9 +702,32 @@ public class CommonUtility {
 			return true;
 		}
 		catch(JSONParseException e){
-
 			System.out.println("error");
 			return false;
 		}
+	}
+
+
+	/**
+	 * @param jsonString
+	 * @throws IOException
+	 * @throws InterruptedException
+	 */
+	public void sendFileShareRequestToServer(String jsonString) throws IOException, InterruptedException {
+		HashMap<String, byte[]> information = new HashMap<String, byte[]>();
+		information.put(Constants.SHARE_REQUEST, jsonString.getBytes());
+		Socket socket = socketConnect(Constants.SERVER_IP_ADDRESS , Constants.SERVER_PORT_NO);
+		sendBytesThroughSocket(socket , information);
+	}
+	
+	/**
+	 * @throws JSONException
+	 * @throws IOException
+	 * @throws InterruptedException
+	 */
+	public void sendUpdatedClientInfoToServer() throws JSONException, IOException, InterruptedException {
+		String jsonClientInfoString = constructJSONClientInformation();
+		System.out.println("JSON String = " + jsonClientInfoString.toString());
+		sendClientInformationToServer(Constants.CLIENT_UPDATE_INFO, jsonClientInfoString);
 	}
 }
