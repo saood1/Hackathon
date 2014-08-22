@@ -1,12 +1,14 @@
-package com.hackathon.filesync;
+package com.hackathon.socket.classes;
 
 import java.io.IOException;
 
 import org.json.*;
 
+import com.hackathon.filesync.CommonUtility;
+import com.hackathon.filesync.Constants;
 import com.infomatiq.jsi.Point;
 
-public class Clients {
+public class Client {
 
 	public static void main(String[] args) throws IOException, InterruptedException, JSONException {
 		final int portNo = CommonUtility.getMyPortNo();
@@ -42,7 +44,7 @@ public class Clients {
 		mainObj.put(Constants.CLIENT_INFORMATION, ja);
 		//System.out.println("JSON String = " + mainObj.toString());
 		
-		CommonUtility.sendFile("127.0.0.1", portNo, userDirPath + "a.pdf");
+		CommonUtility.sendFile("127.0.0.1", "127.0.0.1", portNo, userDirPath + "a.pdf");
 		
 		//Send the client information to the server
 		//CommonUtility.sendClientInformationToServer(mainObj.toString());

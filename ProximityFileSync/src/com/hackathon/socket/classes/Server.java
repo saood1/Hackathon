@@ -1,4 +1,4 @@
-package com.hackathon.filesync;
+package com.hackathon.socket.classes;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -9,6 +9,9 @@ import java.util.HashMap;
 import java.util.concurrent.TimeUnit;
 
 import org.json.JSONException;
+
+import com.hackathon.filesync.CommonUtility;
+import com.hackathon.filesync.Constants;
 
 public class Server {
 

@@ -1,6 +1,8 @@
-package com.hackathon.filesync;
+package com.hackathon.proximity.persistence;
 
 import java.io.*; 
+
+import com.hackathon.proximity.logic.ProximityManager;
 
 public class PersistantManager {
 

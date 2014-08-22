@@ -2,6 +2,10 @@ package com.hackathon.filesync;
 import java.io.*;
 import java.util.*;
 
+import com.hackathon.proximity.logic.ProximityManager;
+import com.hackathon.proximity.logic.User;
+import com.hackathon.proximity.persistence.PersistantManager;
+
 public class BootStraper {
 	public static void start()
 	{

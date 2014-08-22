@@ -1,9 +1,10 @@
-package com.hackathon.filesync;
+package com.hackathon.proximity.logic;
 import gnu.trove.TIntProcedure;
 
 import java.io.*; 
 import java.util.*; 
 
+import com.hackathon.filesync.Utility;
 import com.infomatiq.jsi.Point;
 import com.infomatiq.jsi.Rectangle;
 import com.infomatiq.jsi.SpatialIndex;

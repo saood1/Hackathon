@@ -1,4 +1,4 @@
-package com.hackathon.filesync;
+package com.hackathon.proximity.logic;
 import java.io.*;
 
 public class GeoLocation {

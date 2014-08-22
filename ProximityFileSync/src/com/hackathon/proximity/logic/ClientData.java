@@ -1,13 +1,13 @@
-package com.hackathon.filesync;
+package com.hackathon.proximity.logic;
 import java.io.*;
 
-public class Client {
+public class ClientData {
 	private GeoLocation m_location;
 
 	private String m_ip;
 	private Integer m_port;
 
-	public Client(GeoLocation location,  String ip, Integer port) {
+	public ClientData(GeoLocation location,  String ip, Integer port) {
 		super();
 		this.m_location = location;
 		this.m_ip = ip;

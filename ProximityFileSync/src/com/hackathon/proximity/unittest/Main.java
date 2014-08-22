@@ -1,12 +1,17 @@
-package com.hackathon.filesync;
+package com.hackathon.proximity.unittest;
 import java.io.*; 
 import java.util.ArrayList;
 import java.util.List;
+
 import gnu.trove.TIntProcedure;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.hackathon.filesync.Utility;
+import com.hackathon.proximity.logic.ProximityManager;
+import com.hackathon.proximity.logic.User;
+import com.hackathon.proximity.logic.UserFileMetaData;
 import com.infomatiq.jsi.Point;
 import com.infomatiq.jsi.Rectangle;
 import com.infomatiq.jsi.SpatialIndex;
