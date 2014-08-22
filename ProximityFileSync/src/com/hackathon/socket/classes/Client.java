@@ -138,7 +138,7 @@ public class Client {
 		if(words.length == 3){
 			JSONObject sh = new JSONObject();
 			sh.put(Constants.FILE_NAME, words[1].toString());
-			sh.put(Constants.USER_ID, words[2].toString());
+			sh.put(Constants.RECIPIENT_USER_ID, words[2].toString());
 			CommonUtility.getInstance().sendFileShareRequestToServer(sh.toString());
 		}
 		else{

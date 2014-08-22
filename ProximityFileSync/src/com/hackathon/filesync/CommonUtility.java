@@ -241,10 +241,14 @@ public class CommonUtility {
 						System.out.println(jo.toString());
 					} 
 					else if (infoMap.containsKey(Constants.SERVER_SHARE_REQUEST)) {
-
+						String s = new String(infoMap.get(Constants.SERVER_SHARE_REQUEST));
+						JSONObject jo = new JSONObject(s);
+						String fileName = jo.getString(Constants.FILE_NAME);
+						String recipient_user_id = jo.getString(Constants.RECIPIENT_USER_ID);
+						System.out.println(jo.toString());
 					}
 					else if (infoMap.containsKey(Constants.CLIENT_FILE_SEND_REQUEST)) {
-
+						
 					}
 					else if (infoMap.containsKey(Constants.CLIENT_FILE_RECEIEVE_REQUEST)) {
 						String s = new String(infoMap.get(Constants.CLIENT_FILE_RECEIEVE_REQUEST));
