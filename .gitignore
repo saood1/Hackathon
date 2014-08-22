@@ -26,3 +26,5 @@ ProximityFileSync/.metadata/.plugins/org.eclipse.jdt.core/nonChainingJarsCache
 *.xml
 
 *.ini
+
+*.class
