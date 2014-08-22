@@ -240,9 +240,12 @@ public class CommonUtility {
 						JSONObject jo = new JSONObject(s);
 						System.out.println(jo.toString());
 					} 
+					else if (infoMap.containsKey(Constants.SERVER_SHARE_REQUEST)) {
+
+					}
 					else if (infoMap.containsKey(Constants.CLIENT_FILE_SEND_REQUEST)) {
 
-					} 
+					}
 					else if (infoMap.containsKey(Constants.CLIENT_FILE_RECEIEVE_REQUEST)) {
 						String s = new String(infoMap.get(Constants.CLIENT_FILE_RECEIEVE_REQUEST));
 						JSONObject jo = new JSONObject(s);
@@ -394,15 +397,14 @@ public class CommonUtility {
 	 * @throws InterruptedException
 	 */
 	private void sendBytesThroughSocket(Socket socket, Object information) throws IOException, InterruptedException {
-
 		try {
 			// Start transfer
-			ObjectOutputStream objOut = new ObjectOutputStream(
-					socket.getOutputStream());
+			ObjectOutputStream objOut = new ObjectOutputStream(socket.getOutputStream());
 			objOut.writeObject(information);
 			objOut.flush();
 			objOut.close();
-		} finally {
+		} 
+		finally {
 			socket.close();
 		}
 	}
@@ -413,8 +415,7 @@ public class CommonUtility {
 	 * @param list
 	 * @return
 	 */
-	public static User createUser(ClientData client, String userId,
-			List<UserFileMetaData> list) {
+	public static User createUser(ClientData client, String userId,	List<UserFileMetaData> list) {
 		User user = new User(userId, client);
 		return user;
 	}
@@ -468,9 +469,7 @@ public class CommonUtility {
 	 * @param list
 	 * @return
 	 */
-	public static User createUser(String userId, GeoLocation location,
-			String ip, Integer port, List<UserFileMetaData> list) {
-
+	public static User createUser(String userId, GeoLocation location, String ip, Integer port, List<UserFileMetaData> list) {
 		return createUser(createClient(location, ip, port), userId, list);
 	}
 
@@ -539,12 +538,11 @@ public class CommonUtility {
 			longitude = Float.parseFloat(JsonObj.get(Constants.YCORDINATES).toString());
 
 			JSONArray jFileList = new JSONArray(JsonObj.get(Constants.FILES).toString());
-			
 			for(int i = 0 ; i < jFileList.length() ; i++){
 				fileNames.add(jFileList.get(i).toString());
 			}
-			return createUserWithFileList(userId, lattitude, longitude, "", ip, port, fileNames);
 
+			return createUserWithFileList(userId, lattitude, longitude, "", ip, port, fileNames);
 		} 
 		catch (JSONException e) {
 			e.printStackTrace();
@@ -715,7 +713,7 @@ public class CommonUtility {
 	 */
 	public void sendFileShareRequestToServer(String jsonString) throws IOException, InterruptedException {
 		HashMap<String, byte[]> information = new HashMap<String, byte[]>();
-		information.put(Constants.SHARE_REQUEST, jsonString.getBytes());
+		information.put(Constants.SERVER_SHARE_REQUEST, jsonString.getBytes());
 		Socket socket = socketConnect(Constants.SERVER_IP_ADDRESS , Constants.SERVER_PORT_NO);
 		sendBytesThroughSocket(socket , information);
 	}
