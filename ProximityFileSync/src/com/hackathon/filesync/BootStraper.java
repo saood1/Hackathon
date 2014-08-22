@@ -12,21 +12,22 @@ public class BootStraper {
 		User user;
 		ProximityManager proximityManager = ProximityManager.getInstance();
 		PersistantManager persistantManager = PersistantManager.getInstance();
-		//read from persistentdb and add to proximityManager
-		//proximityManager.addUser(user);
+		 List<String> results = persistantManager.getUserInfoFromDB();
+		 for(String jUserInfo : results)
+		 {
+		    user = CommonUtility.createUser(jUserInfo);
+		    proximityManager.addUser(user);
+		 }
+		
 	}
 	
 	public static void saveUsers()
 	{
 		ProximityManager proximityManager = ProximityManager.getInstance();
 		PersistantManager persistantManager = PersistantManager.getInstance();
-		Map<String, User> mapFromIdToUser = proximityManager.getMapFromIdToUser();
 		//read from ProximityManager and save it through persistentManager
 		//persistantManager.deleteDB();
-		for(User user : mapFromIdToUser.values())
-		{
-		 
-		}
+		
 	}
 
 }

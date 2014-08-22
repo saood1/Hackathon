@@ -1,7 +1,10 @@
 package com.hackathon.proximity.persistence;
 
 import java.io.*; 
+import java.net.UnknownHostException;
+import java.util.*;
 
+import com.hackathon.filesync.CommonUtility;
 import com.hackathon.proximity.logic.ProximityManager;
 
 public class PersistantManager {
@@ -20,6 +23,18 @@ public class PersistantManager {
 
 	private PersistantManager(){}
 
+	public List<String> getUserInfoFromDB()
+	{
+		List<String> results = null;
+		try {
+			results = CommonUtility.Extract();
+		} catch (UnknownHostException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		return results;
+	}
 }
 
 /*
