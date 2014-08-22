@@ -20,7 +20,10 @@ public class Constants {
 	public static final String RECEIVE_FILE                 = "RECEIVE_FILE";
 	
 	public static final String FILE                         = "FILE";
+	public static final String FILE_DETAILS                         = "FILE_DETAILS";
+	public static final String FILE_NAME                    = "FILE_NAME";
+	public static final String FROM                         = "FROM";
 	
 	//Shared dir name
-	public static final String SHARED_DIR                   = "/hackathon_share";
+	public static final String SHARED_DIR                   = System.getProperty("user.home") + "/hackathon_share/";
 }

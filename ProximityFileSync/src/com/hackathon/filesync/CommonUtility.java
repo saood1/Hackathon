@@ -13,8 +13,9 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.HashMap;
-import java.util.Random;
 import java.util.concurrent.TimeUnit;
+
+import org.json.*;
 
 import com.infomatiq.jsi.Point;
 
@@ -27,6 +28,36 @@ import com.infomatiq.jsi.Point;
 public class CommonUtility {
 
 	/**
+	 * Create a socket connection, if the connection fails keep re-trying every 3 seconds until its connected 
+	 * @param hostIp
+	 * @param portNo
+	 * @return
+	 */
+	private static Socket socketConnect(String hostIp, int portNo){
+		boolean connected = false;
+		Socket socket = null;
+		
+		//Check if the socket connects to the given ip and ports
+		while(!connected){
+			try{
+				socket = new Socket(hostIp, portNo);
+				connected = true;
+			}
+			catch(Exception e){
+				connected = false;
+				try {
+					TimeUnit.SECONDS.sleep(3);
+				} 
+				catch (InterruptedException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
+			} 
+		}
+		return socket;
+	}
+	
+	/**
 	 * Sends a file to a dedicated host with payload information and  
 	 * @param hostIp
 	 * @param portNo
@@ -34,26 +65,33 @@ public class CommonUtility {
 	 * @throws UnknownHostException
 	 * @throws IOException
 	 * @throws InterruptedException
+	 * @throws JSONException 
 	 */
-	public static void sendFile(String hostIp, int portNo, String filePath) throws UnknownHostException, IOException, InterruptedException{
-		Socket socket = new Socket(hostIp, portNo);
+	public static void sendFile(String hostIp, int portNo, String filePath) throws UnknownHostException, IOException, InterruptedException, JSONException{
+		Socket socket = socketConnect(hostIp, portNo);
 		HashMap<String, byte[]> information = new HashMap<String, byte[]>();
 		
 		try{
-			//Check if the socket connects to the given ip and ports
-			while(socket.isConnected()==false){
-				System.out.println("Waiting for the socket to open..");
-				TimeUnit.SECONDS.sleep(5);
-			}
-					
-			//Add the task to map
-			String task = "TASK:1";
-			information.put("string", task.getBytes());
 			
 			//Read the file
 			File file = new File(filePath);
 		    long length = file.length();
-		    		    
+		    
+		    //Create JSON object out of the strings
+		    JSONObject jo = new JSONObject();
+			jo.put(Constants.FROM, hostIp);
+			jo.put(Constants.FILE_NAME, file.getName());
+
+			JSONArray ja = new JSONArray();
+			ja.put(jo);
+			
+			JSONObject mainObj = new JSONObject();
+			mainObj.put(Constants.FILE_DETAILS, ja);
+			
+			//Add the task to map
+			information.put(Constants.RECEIVE_FILE, mainObj.toString().getBytes());
+						
+		    
 		    //Initialize the byte array for transfer
 		    byte[] fileBytes = new byte[(int) length];
 		    		    
@@ -66,7 +104,7 @@ public class CommonUtility {
 		    information.put(Constants.FILE, fileBytes);
 		    
 		    try{
-		    	sendBytesThroughSocket(hostIp, portNo, information);
+		    	sendBytesThroughSocket(socket, information);
 			}
 		 	finally{
 				fis.close();
@@ -116,27 +154,26 @@ public class CommonUtility {
 					ObjectInputStream objInp = new ObjectInputStream(socket.getInputStream());
 					HashMap<String, byte[]> infoMap = (HashMap<String, byte[]>)objInp.readObject();
 					
-					String tasks = new String(infoMap.get("string"));
 					/*
-					 * This block will contain the logic to parse the string which
-					 * will be a json string
-					 * 
-					 * 
+					 * Following conditional checks are written to handle various transactions
 					 */
-					System.out.println(tasks);
-					
-					 
-					/*
-					 * This block will switch cases or conditional checks to execute tasks based on there nature
-					 * will be a json string
-					 * 
-					 * 
-					 * 
-					 */
-					
-					byte fileBytes[] = infoMap.get("file");
-					if(fileBytes!=null && fileBytes.length>0)
-						CommonUtility.recieveFile(fileBytes, "test.log");
+					if(infoMap.containsKey(Constants.CLIENT_INFORMATION)){
+						
+					}
+					else if(infoMap.containsKey(Constants.SEND_FILE)){
+						
+					}
+					else if(infoMap.containsKey(Constants.RECEIVE_FILE)){
+						String s = new String(infoMap.get(Constants.RECEIVE_FILE));
+						JSONObject jo = new JSONObject(s);
+						JSONArray jarr = jo.getJSONArray(Constants.FILE_DETAILS);
+						
+						String fileName = jarr.getJSONObject(0).getString(Constants.FILE_NAME);
+						String from = jarr.getJSONObject(0).getString(Constants.FROM);
+						
+						byte fileBytes[] = infoMap.get(Constants.FILE);
+						CommonUtility.recieveFile(fileBytes, fileName);
+					}
 					
 					objInp.close();
 				}	
@@ -204,17 +241,14 @@ public class CommonUtility {
 	 * Creates a shared directory under users home directory
 	 * @throws IOException
 	 */
-	public static void createUserSharedDir() throws IOException{
-		String homeDir = System.getProperty("user.home");
-		File dir = new File(homeDir + Constants.SHARED_DIR);
+	public static void createUserSharedDir(String userDirPath) throws IOException{
+		File dir = new File(userDirPath);
 		
 		if(!dir.exists()){
 			dir.mkdirs();
 		}
-		
 	}
-	
-	
+		
 	/**
 	 * This method sends information to Server for processing
 	 * @param jsonString
@@ -225,9 +259,10 @@ public class CommonUtility {
 	public static void sendClientInformationToServer(String jsonString) throws UnknownHostException, IOException, InterruptedException{
 		HashMap<String, byte[]> information = new HashMap<String, byte[]>();
 		information.put(Constants.CLIENT_INFORMATION, jsonString.getBytes());
+		Socket socket = socketConnect(Constants.SERVER_IP_ADDRESS, Constants.SERVER_PORT_NO);
 		
 		//Start sending the byte information
-		sendBytesThroughSocket(Constants.SERVER_IP_ADDRESS, Constants.SERVER_PORT_NO, information);
+		sendBytesThroughSocket(socket, information);
 	}
 	
 	/**
@@ -237,22 +272,14 @@ public class CommonUtility {
 	 * @throws IOException
 	 * @throws InterruptedException 
 	 */
-	private static void sendBytesThroughSocket(String hostIP, int portNo, Object information) throws IOException, InterruptedException{
-		Socket socket = new Socket(hostIP, portNo);
-		
+	private static void sendBytesThroughSocket(Socket socket, Object information) throws IOException, InterruptedException{
+				
 		try{
-			//Check if the socket connects to the given ip and ports
-			while(socket.isConnected()==false){
-				System.out.println("Waiting for the socket to open..");
-				TimeUnit.SECONDS.sleep(5);
-			}
-			
 			//Start transfer
 	    	ObjectOutputStream objOut = new ObjectOutputStream(socket.getOutputStream());
 	    	objOut.writeObject(information);
 	    	objOut.flush();
 			objOut.close();
-				
 		}
 		finally{
 			socket.close();	

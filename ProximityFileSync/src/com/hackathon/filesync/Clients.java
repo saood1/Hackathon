@@ -1,24 +1,31 @@
 package com.hackathon.filesync;
 
 import java.io.IOException;
-import java.net.UnknownHostException;
 
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
+import org.json.*;
 
 import com.infomatiq.jsi.Point;
 
 public class Clients {
 
-	public static void main(String[] args) throws IOException, InterruptedException {
+	public static void main(String[] args) throws IOException, InterruptedException, JSONException {
 		final int portNo = CommonUtility.getMyPortNo();
 		final String ipAddress = CommonUtility.getMyIPAddress();
 		final Point cord = CommonUtility.getMyGeoCordinates();
 		final String userID = CommonUtility.getMyUserID();
 		final int uuid = CommonUtility.getMyUserID().hashCode();
+		final String userDirPath = Constants.SHARED_DIR;
+		
+		//Start the client socket
+		Thread socket = new Thread(){
+			public void run(){
+				CommonUtility.startSocket(portNo);		
+			}
+		};
+		socket.start();
 		
 		//Create users shared directory if not already created
-		CommonUtility.createUserSharedDir();
+		CommonUtility.createUserSharedDir(userDirPath);
 		
 		//Create the JSON Object
 		JSONObject jo = new JSONObject();
@@ -29,23 +36,18 @@ public class Clients {
 		jo.put(Constants.CORDINATES, cord.x + "|" + cord.y);
 
 		JSONArray ja = new JSONArray();
-		ja.add(jo);
+		ja.put(jo);
 
 		JSONObject mainObj = new JSONObject();
 		mainObj.put(Constants.CLIENT_INFORMATION, ja);
 		//System.out.println("JSON String = " + mainObj.toString());
 		
+		CommonUtility.sendFile("127.0.0.1", portNo, userDirPath + "a.pdf");
+		
 		//Send the client information to the server
 		//CommonUtility.sendClientInformationToServer(mainObj.toString());
 		
-		//Start the client socket
-		Thread socket = new Thread(){
-			public void run(){
-				CommonUtility.startSocket(portNo);		
-			}
-		};
-		
-		socket.start();		
+				
 	}
 
 }
