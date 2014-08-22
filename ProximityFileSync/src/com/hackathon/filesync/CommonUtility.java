@@ -44,8 +44,7 @@ public class CommonUtility {
 	private int uuid;
 	private ArrayList<String> fileList;
 	private static CommonUtility instance = null;
-	
-	
+		
 	/**
 	 * Preventing object creation for this class
 	 * @throws UnknownHostException
