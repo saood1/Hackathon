@@ -32,16 +32,20 @@ public class PersistantManager {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		
+
 		return results;
+	}
+
+	public boolean addUser(String jUserInfo)
+	{
+		try {
+			return CommonUtility.Add(jUserInfo);
+		} catch (UnknownHostException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return false;
 	}
 }
 
-/*
- * 1- bootstraper to read json and bring up proximitymanager
- * 2- refresh logic--client side
- * 3- remove user logic[done]
- * 4- update user, file and proximitymanager[done]
- * 6- add user and json string parser and save in text file
- * 5- syn and exception handling
- */
+

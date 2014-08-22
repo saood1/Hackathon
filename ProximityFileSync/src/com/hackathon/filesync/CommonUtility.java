@@ -23,8 +23,10 @@ import org.json.JSONObject;
 
 import com.hackathon.proximity.logic.ClientData;
 import com.hackathon.proximity.logic.GeoLocation;
+import com.hackathon.proximity.logic.ProximityManager;
 import com.hackathon.proximity.logic.User;
 import com.hackathon.proximity.logic.UserFileMetaData;
+import com.hackathon.proximity.persistence.PersistantManager;
 import com.infomatiq.jsi.Point;
 import com.infomatiq.jsi.Rectangle;
 
@@ -222,7 +224,7 @@ public class CommonUtility {
 				currentPort = portNo;
 
 			ServerSocket serverSocket = new ServerSocket(currentPort);
-
+			ProximityManager proximityManager = ProximityManager.getInstance();
 			try {
 				while (true) {
 					Socket socket = serverSocket.accept();
@@ -235,6 +237,14 @@ public class CommonUtility {
 					if (infoMap.containsKey(Constants.SERVER_SAVE_CLIENT_INFORMATION)) {
 						String s = new String(infoMap.get(Constants.SERVER_SAVE_CLIENT_INFORMATION));
 						JSONObject jo = new JSONObject(s);
+						User user;
+						
+						PersistantManager persistantManager = PersistantManager.getInstance();
+						persistantManager.addUser(jo.toString());
+						
+					    user = CommonUtility.createUser(jo.toString());
+					    proximityManager.addUser(user);
+						
 						System.out.println(jo.toString());
 					}
 
@@ -242,8 +252,10 @@ public class CommonUtility {
 					else if (infoMap.containsKey(Constants.SERVER_SHARE_REQUEST)) {
 						String s = new String(infoMap.get(Constants.SERVER_SHARE_REQUEST));
 						JSONObject jo = new JSONObject(s);
+						
 						String fileName = jo.getString(Constants.FILE_NAME);
 						String recipient_user_id = jo.getString(Constants.RECIPIENT_USER_ID);
+						User user = proximityManager.getNearestUserToDest(fileName, recipient_user_id.hashCode());
 						System.out.println(jo.toString());
 					}
 
