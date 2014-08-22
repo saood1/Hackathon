@@ -231,15 +231,14 @@ public class CommonUtility {
 					ObjectInputStream objInp = new ObjectInputStream(socket.getInputStream());
 					HashMap<String, byte[]> infoMap = (HashMap<String, byte[]>) objInp.readObject();
 
-					/*
-					 * Following conditional checks are written to handle
-					 * various transactions
-					 */
+					//Server receives Save/Update client request using which it parses the client information and saves in DB
 					if (infoMap.containsKey(Constants.SERVER_SAVE_CLIENT_INFORMATION)) {
 						String s = new String(infoMap.get(Constants.SERVER_SAVE_CLIENT_INFORMATION));
 						JSONObject jo = new JSONObject(s);
 						System.out.println(jo.toString());
-					} 
+					}
+					
+					//Server receives Share request using which it checks the nearest node
 					else if (infoMap.containsKey(Constants.SERVER_SHARE_REQUEST)) {
 						String s = new String(infoMap.get(Constants.SERVER_SHARE_REQUEST));
 						JSONObject jo = new JSONObject(s);
@@ -247,9 +246,13 @@ public class CommonUtility {
 						String recipient_user_id = jo.getString(Constants.RECIPIENT_USER_ID);
 						System.out.println(jo.toString());
 					}
+					
+					//Client receives send request using which it will send file bytes to the recipient
 					else if (infoMap.containsKey(Constants.CLIENT_FILE_SEND_REQUEST)) {
 						
 					}
+					
+					//Client receives file recieve request using which it downlaods the file bytes
 					else if (infoMap.containsKey(Constants.CLIENT_FILE_RECEIEVE_REQUEST)) {
 						String s = new String(infoMap.get(Constants.CLIENT_FILE_RECEIEVE_REQUEST));
 						JSONObject jo = new JSONObject(s);
