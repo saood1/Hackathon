@@ -18,7 +18,12 @@ public class Server {
 	public static void main(String[] args) throws UnknownHostException, IOException, InterruptedException, JSONException {
 		Thread socketServer = new Thread(){
 			public void run(){
-				CommonUtility.startSocket(Constants.SERVER_PORT_NO);		
+				try {
+					CommonUtility.getInstance().startSocket(Constants.SERVER_PORT_NO);
+				} 
+				catch (UnknownHostException e) {
+					e.printStackTrace();
+				}		
 			}
 		};
 		

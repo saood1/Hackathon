@@ -12,11 +12,14 @@ import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.UnknownHostException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-import org.json.*;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import com.hackathon.proximity.logic.ClientData;
 import com.hackathon.proximity.logic.GeoLocation;
@@ -25,24 +28,6 @@ import com.hackathon.proximity.logic.UserFileMetaData;
 import com.infomatiq.jsi.Point;
 import com.infomatiq.jsi.Rectangle;
 
-//Mongo packages
-import com.mongodb.DB;
-import com.mongodb.DBCollection;
-import com.mongodb.DBCursor;
-import com.mongodb.MongoClient;
-import com.mongodb.MongoException;
-import com.mongodb.BasicDBObject;
-import com.mongodb.DBObject;
-import com.mongodb.MongoClient;
-import com.mongodb.MongoException;
-import com.mongodb.util.JSON;
-import com.mongodb.util.JSONParseException;
-
-import java.net.UnknownHostException;
-import java.util.ArrayList;
-import java.util.List;
-
-
 /**
  * This class holds all common functionality that can be used by server and
  * client.
@@ -50,16 +35,34 @@ import java.util.List;
  * @author mohamed.khan
  *
  */
-/**
- * @author pavan.yadav
- *
- */
-/**
- * @author pavan.yadav
- *
- */
 public class CommonUtility {
 
+	private int portNo;
+	private String ipAddress;
+	private Point cord;
+	private String userID;
+	private int uuid;
+	private ArrayList<String> fileList;
+	private static CommonUtility instance = null;
+	
+	private CommonUtility() throws UnknownHostException{
+		portNo = getMyPortNo();
+		ipAddress = getMyIPAddress();
+		cord = getMyGeoCordinates();
+		userID = getMyUserID();
+		uuid = getMyUserID().hashCode();
+		fileList = getMyFiles(Constants.SHARED_DIR);
+	}
+	
+	
+	
+	public static CommonUtility getInstance() throws UnknownHostException{
+		if(instance==null){
+			instance = new CommonUtility();
+		}
+		return instance;
+	}
+	
 	/**
 	 * Create a socket connection, if the connection fails keep re-trying every
 	 * 3 seconds until its connected
@@ -68,7 +71,7 @@ public class CommonUtility {
 	 * @param portNo
 	 * @return
 	 */
-	private static Socket socketConnect(String hostIp, int portNo) {
+	private Socket socketConnect(String hostIp, int portNo) {
 		boolean connected = false;
 		Socket socket = null;
 
@@ -101,7 +104,7 @@ public class CommonUtility {
 	 * @throws InterruptedException
 	 * @throws JSONException
 	 */
-	public static void sendFile(String fromIp, String destIp, int destPortNo,
+	public void sendFile(String fromIp, String destIp, int destPortNo,
 			String filePath) throws UnknownHostException, IOException,
 			InterruptedException, JSONException {
 		Socket socket = socketConnect(destIp, destPortNo);
@@ -157,7 +160,7 @@ public class CommonUtility {
 	 * @param bytes
 	 * @param fileName
 	 */
-	public static void recieveFile(byte[] bytes, String fileName) {
+	public void recieveFile(byte[] bytes, String fileName) {
 		FileOutputStream fos = null;
 		BufferedOutputStream bos = null;
 
@@ -172,14 +175,19 @@ public class CommonUtility {
 			System.out.println(e.getLocalizedMessage());
 		}
 	}
+	
 
 	/**
 	 * Starts the server socket
 	 * 
 	 * @param portNo
 	 */
-	public static void startSocket(Integer portNo) {
+	@SuppressWarnings("unchecked")
+	public void startSocket(Integer currentPort) {
 		try {
+			if(currentPort==null)
+				currentPort = portNo;
+			
 			ServerSocket serverSocket = new ServerSocket(portNo);
 
 			try {
@@ -189,18 +197,20 @@ public class CommonUtility {
 
 					ObjectInputStream objInp = new ObjectInputStream(
 							socket.getInputStream());
-					HashMap<String, byte[]> infoMap = (HashMap<String, byte[]>) objInp
-							.readObject();
+					HashMap<String, byte[]> infoMap = (HashMap<String, byte[]>) objInp.readObject();
 
 					/*
 					 * Following conditional checks are written to handle
 					 * various transactions
 					 */
 					if (infoMap.containsKey(Constants.CLIENT_INFORMATION)) {
+						
 
-					} else if (infoMap.containsKey(Constants.SEND_FILE)) {
+					} 
+					else if (infoMap.containsKey(Constants.SEND_FILE)) {
 
-					} else if (infoMap.containsKey(Constants.RECEIVE_FILE)) {
+					} 
+					else if (infoMap.containsKey(Constants.RECEIVE_FILE)) {
 						String s = new String(
 								infoMap.get(Constants.RECEIVE_FILE));
 						JSONObject jo = new JSONObject(s);
@@ -213,7 +223,7 @@ public class CommonUtility {
 								Constants.FROM);
 
 						byte fileBytes[] = infoMap.get(Constants.FILE);
-						CommonUtility.recieveFile(fileBytes, fileName);
+						recieveFile(fileBytes, fileName);
 					}
 
 					objInp.close();
@@ -232,7 +242,7 @@ public class CommonUtility {
 	 * @return Build the JSON string containing the client information when the
 	 *         system boots up for the first time
 	 */
-	public static String getJSONClientInfo() {
+	public String getJSONClientInfo() {
 		String val = null;
 		return val;
 
@@ -241,7 +251,7 @@ public class CommonUtility {
 	/**
 	 * @return The ip address of the current system
 	 */
-	public static String getMyIPAddress() throws UnknownHostException {
+	public String getMyIPAddress() throws UnknownHostException {
 		String val = InetAddress.getLocalHost().getHostAddress();
 		return val;
 	}
@@ -249,7 +259,7 @@ public class CommonUtility {
 	/**
 	 * @return 5 digit port no which is unused by the system
 	 */
-	public static int getMyPortNo() {
+	public int getMyPortNo() {
 		int val = getRandomInteger(49152, 65534);
 		return val;
 	}
@@ -257,21 +267,21 @@ public class CommonUtility {
 	/**
 	 * @return x,y co-ordinates of the users location
 	 */
-	public static Point getMyGeoCordinates() {
+	public Point getMyGeoCordinates() {
 		return new Point(getRandomInteger(0, 30), getRandomInteger(0, 30));
 	}
 
 	/**
 	 * @return a random integer between the low-high range
 	 */
-	public static int getRandomInteger(int low, int high) {
+	public int getRandomInteger(int low, int high) {
 		return (int) ((Math.random() * (high - low)) + low);
 	}
 
 	/**
 	 * @return the current logged-in used id
 	 */
-	public static String getMyUserID() {
+	public String getMyUserID() {
 		return System.getProperty("user.name");
 	}
 
@@ -280,7 +290,7 @@ public class CommonUtility {
 	 * 
 	 * @throws IOException
 	 */
-	public static void createUserSharedDir(String userDirPath)
+	public void createUserSharedDir(String userDirPath)
 			throws IOException {
 		File dir = new File(userDirPath);
 
@@ -297,17 +307,42 @@ public class CommonUtility {
 	 * @throws IOException
 	 * @throws InterruptedException
 	 */
-	public static void sendClientInformationToServer(String jsonString)
+	public void sendClientInformationToServer(String key, String jsonString)
 			throws UnknownHostException, IOException, InterruptedException {
+		
 		HashMap<String, byte[]> information = new HashMap<String, byte[]>();
-		information.put(Constants.CLIENT_INFORMATION, jsonString.getBytes());
-		Socket socket = socketConnect(Constants.SERVER_IP_ADDRESS,
-				Constants.SERVER_PORT_NO);
+		information.put(key, jsonString.getBytes());
+		Socket socket = socketConnect(Constants.SERVER_IP_ADDRESS, Constants.SERVER_PORT_NO);
 
 		// Start sending the byte information
 		sendBytesThroughSocket(socket, information);
 	}
 
+	
+	/**
+	 * Scan all the files in a given dir
+	 * @param dirPath
+	 * @return
+	 */
+	public ArrayList<String> getMyFiles(String dirPath) {
+		File folder = new File(dirPath);
+
+		ArrayList<String> list = new ArrayList<String>();
+		File files[] = folder.listFiles();
+		
+		if(files!=null && files.length>0){
+			for (final File fileEntry : folder.listFiles()) {
+				if (!fileEntry.isDirectory()) {
+					list.add(fileEntry.getName());
+				}
+			}
+				
+		}
+		
+		return list;
+	}
+	
+	
 	/**
 	 * Send byte information to through the connected socket
 	 * 
@@ -316,7 +351,7 @@ public class CommonUtility {
 	 * @throws IOException
 	 * @throws InterruptedException
 	 */
-	private static void sendBytesThroughSocket(Socket socket, Object information)
+	private void sendBytesThroughSocket(Socket socket, Object information)
 			throws IOException, InterruptedException {
 
 		try {
@@ -332,56 +367,57 @@ public class CommonUtility {
 	}
 
 	
-	public static User createUser(ClientData client, String userId,
+	
+	public User createUser(ClientData client, String userId,
 			List<UserFileMetaData> list) {
 		User user = new User(userId, client);
 		return user;
 	}
 
-	public static Rectangle getPointRectangle(float x, float y) {
+	public Rectangle getPointRectangle(float x, float y) {
 		Rectangle r = new Rectangle(x, y, x + 0.5f, y + 0.5f);
 		return r;
 	}
 
-	public static GeoLocation createGeoLocation(float lattitude,
+	public GeoLocation createGeoLocation(float lattitude,
 			float longitude, String state, String country) {
 
 		return new GeoLocation(lattitude, longitude, state, country);
 	}
 
-	public static ClientData createClient(GeoLocation location, String ip,
+	public ClientData createClient(GeoLocation location, String ip,
 			Integer port) {
 		return new ClientData(location, ip, port);
 	}
 
-	public static UserFileMetaData createUserFileMetaData(String checksum,
+	public UserFileMetaData createUserFileMetaData(String checksum,
 			int version, String fileName) {
 		return new UserFileMetaData(checksum, version, fileName);
 	}
 
-	public static User createUser(String userId, GeoLocation location,
+	public User createUser(String userId, GeoLocation location,
 			String ip, Integer port, List<UserFileMetaData> list) {
 
 		return createUser(createClient(location, ip, port), userId, list);
 	}
 
-	public static void copyClientInfo(ClientData src, ClientData dest) {
+	public void copyClientInfo(ClientData src, ClientData dest) {
 		dest.setIp(src.getIp());
 		dest.setLocation(src.getLocation());
 		dest.setPort(src.getPort());
 	}
 
-	public static void copyFileMetaDataInfo(UserFileMetaData src, UserFileMetaData dest) {
+	public void copyFileMetaDataInfo(UserFileMetaData src, UserFileMetaData dest) {
 		dest.setChecksum(src.getChecksum());
 		dest.setFileName(src.getFileName());
 		dest.setVersion(src.getVersion());
 	}
 
-	public static double distance(float x1, float y1, float x2, float y2) {
+	public double distance(float x1, float y1, float x2, float y2) {
 		return java.awt.geom.Point2D.distance(x1, y1, x2, y2);
 	}
 
-	public static void copyUserInfo(User src, User dest) {
+	public void copyUserInfo(User src, User dest) {
 		dest.setUserId(src.getUserId());
 
 		copyClientInfo(src.getClient(), dest.getClient());
@@ -396,120 +432,42 @@ public class CommonUtility {
 
 	}
 
-
-	//Function to insert into the database
-	/**
-	 * @param jsonString
-	 * @return success/failure
-	 * @throws UnknownHostException
-	 */
-	public static boolean Add(String jsonString) throws UnknownHostException {
-	  try{
-	      // connect to the local database server
-	      MongoClient mongoClient = new MongoClient();
-
-	      // get handle to "mydb"
-	      DB db = mongoClient.getDB("mydb");
-
-	      // Authenticate - optional
-	      // boolean auth = db.authenticate("foo", "bar");
-
-	      DBCollection collection = db.getCollection("UserCollection");
-	      try
-	      {
-	          DBObject dbObject =  (DBObject) JSON.parse(jsonString);
-
-	          int id = (Integer) dbObject.get("UUID");
-
-	          BasicDBObject searchQuery = new BasicDBObject();
-	          searchQuery.put("UUID", id);
-	          DBObject cursor = collection.findOne(searchQuery);
-	          if(cursor != null)
-	          {
-	              collection.update(searchQuery, dbObject);
-	              return true;
-	          }
-
-	          collection.insert(dbObject);
-	          return true;
-	      }
-	      catch(JSONParseException e){
-
-	      System.out.println("error");
-	      return false;
-	      }
-	  }
-	  catch(MongoException e)
-	  {
-
-	      System.out.println("error");
-	      e.printStackTrace();
-	      return false;
-	  }
-	}
-
-
-	//Function to Extract from the database
-
-	static List<String> results = new ArrayList<String>();
-
-	/**
-	 * @return List of json strings in the database
-	 * @throws UnknownHostException
-	 */
-	public static List<String> Extract() throws UnknownHostException {
-	  try
-	  {
-	      // connect to the local database server
-	      MongoClient mongoClient = new MongoClient();
-
-	      // get handle to "mydb"
-	      DB db = mongoClient.getDB("mydb");
-
-	      // Authenticate - optional
-	      // boolean auth = db.authenticate("foo", "bar");
-
-	      DBCollection collection = db.getCollection("UserCollection");
-
-	      DBCursor cursor = collection.find();
-
-
-	      while(cursor.hasNext()) {
-	          results.add(cursor.next().toString());
-	      }
-	      return results;
-
-	  }
-	  catch(MongoException e)
-	  {
-	      e.printStackTrace();
-	      return results;
-	  }
-	}
-	// Function to delete a record in database
-	public static boolean delete(int id) throws UnknownHostException 
-	{
-		try{
-			// connect to the local database server
-			MongoClient mongoClient = new MongoClient();
-
-			// get handle to "mydb"
-			DB db = mongoClient.getDB("mydb");
-
-			// Authenticate - optional
-			// boolean auth = db.authenticate("foo", "bar");
-
-			DBCollection collection = db.getCollection("UserCollection");
-			BasicDBObject document = new BasicDBObject();
-			document.put("UUID", id);
-				collection.remove(document);
-				return true;
+	
+	public String getJSONArrayStringFromArrayList(ArrayList<String> list) throws JSONException{
+		JSONArray jArr = new JSONArray();
+		if(list!=null && list.size()>0){
+			for(String s:list){
+				jArr.put(s);
 			}
-			catch(JSONParseException e){
-
-				System.out.println("error");
-				return false;
-			}
+		}
+		return jArr.toString();
 	}
+	
+	/**
+	 * Returns a JSON String from Client Information
+	 * @return
+	 * @throws UnknownHostException
+	 * @throws JSONException
+	 */
+	public String constructJSONClientInformation() throws UnknownHostException, JSONException{
+		
+		//Create the JSON Object
+		JSONObject jo = new JSONObject();
+		jo.put(Constants.USER_ID, userID);
+		jo.put(Constants.UUID, uuid);
+		jo.put(Constants.PORT_NO, portNo);
+		jo.put(Constants.IP_ADDRESS, ipAddress);
+		jo.put(Constants.CORDINATES, cord.x + "|" + cord.y);
+		jo.put(Constants.FILES, getJSONArrayStringFromArrayList(fileList));
+		
+		JSONArray ja = new JSONArray();
+		ja.put(jo);
+
+		JSONObject mainObj = new JSONObject();
+		mainObj.put(Constants.CLIENT_INFORMATION, ja);
+		
+		return mainObj.toString();
+	}
+	
 	
 }
