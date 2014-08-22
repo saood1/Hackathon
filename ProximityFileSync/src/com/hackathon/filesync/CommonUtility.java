@@ -16,6 +16,21 @@ import java.util.HashMap;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
+//MongoDB packages
+import com.mongodb.BasicDBObject;
+import com.mongodb.DB;
+import com.mongodb.DBCollection;
+import com.mongodb.DBCursor;
+import com.mongodb.DBObject;
+import com.mongodb.MongoClient;
+import com.mongodb.MongoException;
+import com.mongodb.util.JSON;
+import com.mongodb.util.JSONParseException;
+
+import java.net.UnknownHostException;
+import java.util.ArrayList;
+import java.util.List;
+
 import com.infomatiq.jsi.Point;
 
 
@@ -258,4 +273,85 @@ public class CommonUtility {
 			socket.close();	
 		}
 	}
+}
+
+//Function to insert into the database
+public static boolean Add(String jsonString) throws UnknownHostException {
+    try{
+        // connect to the local database server
+        MongoClient mongoClient = new MongoClient();
+
+        // get handle to "mydb"
+        DB db = mongoClient.getDB("mydb");
+
+        // Authenticate - optional
+        // boolean auth = db.authenticate("foo", "bar");
+
+        DBCollection collection = db.getCollection("testCollection");
+        try
+        {
+            DBObject dbObject =  (DBObject) JSON.parse(jsonString);
+
+            int id = (Integer) dbObject.get("cid");
+
+            BasicDBObject searchQuery = new BasicDBObject();
+            searchQuery.put("cid", id);
+            DBObject cursor = collection.findOne(searchQuery);
+            if(cursor != null)
+            {
+                collection.update(searchQuery, dbObject);
+                return true;
+            }
+
+            collection.insert(dbObject);
+            return true;
+        }
+        catch(JSONParseException e){
+
+        System.out.println("error");
+        return false;
+        }
+    }
+    catch(MongoException e)
+    {
+
+        System.out.println("error");
+        e.printStackTrace();
+        return false;
+    }
+}
+
+
+//Function to Extract from the database
+
+static List<String> results = new ArrayList<String>();
+
+public static List<String> Add(String jsonString) throws UnknownHostException {
+    try
+    {
+        // connect to the local database server
+        MongoClient mongoClient = new MongoClient();
+
+        // get handle to "mydb"
+        DB db = mongoClient.getDB("mydb");
+
+        // Authenticate - optional
+        // boolean auth = db.authenticate("foo", "bar");
+
+        DBCollection collection = db.getCollection("testCollection");
+
+        DBCursor cursor = collection.find();
+
+
+        while(cursor.hasNext()) {
+            results.add(cursor.next().toString());
+        }
+        return results;
+
+    }
+    catch(MongoException e)
+    {
+        e.printStackTrace();
+        return results;
+    }
 }
