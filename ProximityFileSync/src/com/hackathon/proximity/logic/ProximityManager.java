@@ -4,7 +4,7 @@ import gnu.trove.TIntProcedure;
 import java.io.*; 
 import java.util.*; 
 
-import com.hackathon.filesync.Utility;
+import com.hackathon.filesync.CommonUtility;
 import com.infomatiq.jsi.Point;
 import com.infomatiq.jsi.Rectangle;
 import com.infomatiq.jsi.SpatialIndex;
@@ -98,12 +98,12 @@ public class ProximityManager {
 			{				
 				dbNearestRTree = new RTree();
 				dbNearestRTree.init(null);
-				dbNearestRTree.add(Utility.getPointRectangle(user.getX(), user.getY()), index);
+				dbNearestRTree.add(CommonUtility.getPointRectangle(user.getX(), user.getY()), index);
 				m_mapFromChecksumToProximityUsersRTree.put(fileInfo.getChecksum(), dbNearestRTree);
 			}
 			else
 			{
-				dbNearestRTree.add(Utility.getPointRectangle(user.getX(), user.getY()), index);
+				dbNearestRTree.add(CommonUtility.getPointRectangle(user.getX(), user.getY()), index);
 			}
 
 		}      	
@@ -137,7 +137,7 @@ public class ProximityManager {
 			{
 
 
-				dbNearestRTree.delete(Utility.getPointRectangle(user.getX(), user.getY()), user.getUid());
+				dbNearestRTree.delete(CommonUtility.getPointRectangle(user.getX(), user.getY()), user.getUid());
 
 				if(dbNearestRTree.size() == 0)
 				{
