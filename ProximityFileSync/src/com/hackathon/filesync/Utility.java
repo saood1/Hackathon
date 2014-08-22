@@ -51,7 +51,7 @@ public class Utility {
 		return createUser(createClient(location, ip, port), userId, list);
 	}
 	
-	public static void copyClientInfo(ClientData src, ClientData dest)
+	/*public static void copyClientInfo(ClientData src, ClientData dest)
 	{
 	      dest.setIp(src.getIp());
 	      dest.setLocation(src.getLocation());
@@ -64,14 +64,14 @@ public class Utility {
 	      dest.setFileName(src.getFileName());
 	      dest.setVersion(src.getVersion());	
 	      
-	}
+	}*/
 	
 	public static double distance(float x1, float y1, float x2, float y2)
 	{
 		return java.awt.geom.Point2D.distance(x1, y1, x2, y2);
 	}
 	
-	public static void copyUserInfo(User src, User dest)
+	/*public static void copyUserInfo(User src, User dest)
 	{	      
 		   dest.setUserId(src.getUserId());
 	      
@@ -84,5 +84,5 @@ public class Utility {
 	    	  }    	 
 	    	}
 
-	}
+	}*/
 }
