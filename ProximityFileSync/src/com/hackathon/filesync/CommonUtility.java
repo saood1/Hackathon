@@ -49,7 +49,6 @@ import com.mongodb.util.JSONParseException;
  *
  */
 public class CommonUtility {
-
 	private int portNo;
 	private String ipAddress;
 	private Point cord;
@@ -58,7 +57,9 @@ public class CommonUtility {
 	private int uuid;
 	private ArrayList<String> fileList;
 	private static CommonUtility instance = null;
+	private ProximityManager proximityManager = null;
 
+	
 	/**
 	 * Preventing object creation for this class
 	 * @throws UnknownHostException
@@ -71,6 +72,7 @@ public class CommonUtility {
 		uuid = getMyUserID().hashCode();
 		fileList = getMyFiles(Constants.SHARED_DIR);
 		state = false;
+		proximityManager = ProximityManager.getInstance();
 	}
 
 
@@ -86,6 +88,14 @@ public class CommonUtility {
 		return instance;
 	}
 
+	
+	/**
+	 * Initializes the client launch
+	 * @throws UnknownHostException
+	 * @throws IOException
+	 * @throws InterruptedException
+	 * @throws JSONException
+	 */
 	public void initializeFileSync() throws UnknownHostException, IOException, InterruptedException, JSONException{
 		//Create users shared directory if not already created
 		createUserSharedDir(Constants.SHARED_DIR);
@@ -99,6 +109,7 @@ public class CommonUtility {
 		sendClientInformationToServer(Constants.SERVER_SAVE_CLIENT_INFORMATION, jsonClientInfoString);
 	}
 
+	
 	/**
 	 * Create a socket connection, if the connection fails keep re-trying every
 	 * 3 seconds until its connected
@@ -130,9 +141,9 @@ public class CommonUtility {
 		return socket;
 	}
 
+	
 	/**
-	 * Sends a file to a dedicated host with payload information and
-	 * 
+	 * Sends a file to a dedicated host with pay-load information and
 	 * @param hostIp
 	 * @param portNo
 	 * @param filePath
@@ -141,57 +152,150 @@ public class CommonUtility {
 	 * @throws InterruptedException
 	 * @throws JSONException
 	 */
-	public void sendFile(String fromIp, String destIp, int destPortNo, String filePath) throws UnknownHostException, IOException, InterruptedException, JSONException {
-		Socket socket = socketConnect(destIp, destPortNo);
+	public void executeClientFileSendRequest(String jsonString) throws UnknownHostException, IOException, InterruptedException, JSONException {
+		//Extract the server_share_request information
+		JSONObject jo = new JSONObject(jsonString);
+		String senderIP = jo.getString(Constants.RECEIVER_IP_ADDRESS);
+		String receiverIP = jo.getString(Constants.RECEIVER_IP_ADDRESS);
+		Integer receiverPortNo = Integer.getInteger(jo.getString(Constants.RECEIVER_PORTNO));
+		
+		String filePath = Constants.SHARED_DIR + jo.getString(Constants.FILE_NAME);
 		HashMap<String, byte[]> information = new HashMap<String, byte[]>();
 
+		// Read the file
+		File file = new File(filePath);
+		long length = file.length();
+
+		// Create JSON object out of the strings
+		JSONObject jsobObject = new JSONObject();
+		jsobObject.put(Constants.FROM, senderIP);
+		jsobObject.put(Constants.FILE_NAME, file.getName());
+
+		JSONArray ja = new JSONArray();
+		ja.put(jsobObject);
+
+		JSONObject mainObj = new JSONObject();
+		mainObj.put(Constants.FILE_DETAILS, ja);
+
+		// Add the task to map
+		information.put(Constants.CLIENT_FILE_RECEIEVE_REQUEST, mainObj.toString().getBytes());
+
+		// Initialize the byte array for transfer
+		byte[] fileBytes = new byte[(int) length];
+
+		// Open a InputStream for reading from file Object
+		FileInputStream fis = new FileInputStream(file);
+		BufferedInputStream bis = new BufferedInputStream(fis);
+		bis.read(fileBytes);
+
+		// Add the file payload to the map
+		information.put(Constants.FILE, fileBytes);
+
 		try {
-			// Read the file
-			File file = new File(filePath);
-			long length = file.length();
-
-			// Create JSON object out of the strings
-			JSONObject jo = new JSONObject();
-			jo.put(Constants.FROM, fromIp);
-			jo.put(Constants.FILE_NAME, file.getName());
-
-			JSONArray ja = new JSONArray();
-			ja.put(jo);
-
-			JSONObject mainObj = new JSONObject();
-			mainObj.put(Constants.FILE_DETAILS, ja);
-
-			// Add the task to map
-			information.put(Constants.RECEIVE_FILE, mainObj.toString().getBytes());
-
-			// Initialize the byte array for transfer
-			byte[] fileBytes = new byte[(int) length];
-
-			// Open a InputStream for reading from file Object
-			FileInputStream fis = new FileInputStream(file);
-			BufferedInputStream bis = new BufferedInputStream(fis);
-			;
-			bis.read(fileBytes);
-
-			// Add the file payload to the map
-			information.put(Constants.FILE, fileBytes);
-
-			try {
-				sendBytesThroughSocket(socket, information);
-			} 
-			finally {
-				fis.close();
-				bis.close();
-			}
+			Socket socket = socketConnect(receiverIP, receiverPortNo);
+			sendBytesThroughSocket(socket, information);
 		} 
 		finally {
-			socket.close();
-		}
+			fis.close();
+			bis.close();
+		} 
 	}
 
+	
+	/**
+	 * Function takes care of server share request
+	 * @param jsonString
+	 * @throws JSONException
+	 * @throws IOException
+	 * @throws InterruptedException
+	 */
+	public void executeServerShareRequest(String jsonString) throws JSONException, IOException, InterruptedException{
+		//Hashmap for compiling the task information
+		HashMap<String, byte[]> information = new HashMap<String, byte[]>();
+		
+		//Extract the server_share_request information
+		JSONObject jo = new JSONObject(jsonString);
+		String fileName = jo.getString(Constants.FILE_NAME);
+		String receiverName = jo.getString(Constants.RECIPIENT_USER_ID);
+		Integer receiverUUID = receiverName.hashCode();
+		
+		//Using the proximityManager, get the receiver details
+		User receiverObj = proximityManager.getUserFromIdMap(receiverUUID);
+		String receiverIPAddress = receiverObj.getClient().getIp();
+		Integer receiverPortNo = receiverObj.getClient().getPort();
+		
+		//Find out who is the closes client to the receiver
+		User proximityUser = proximityManager.getNearestUserToDest(fileName, receiverUUID);
+		String senderName = proximityUser.getUserId();
+		String senderIPAddress = proximityUser.getClient().getIp();
+		Integer senderPortNo = proximityUser.getClient().getPort();
+		
+		//Prepare the JSON string for next task
+		JSONObject jsonObject = new JSONObject();
+		jsonObject.put(Constants.SENDER_NAME, senderName);
+		jsonObject.put(Constants.SENDER_IPADDRESS, senderIPAddress);
+		jsonObject.put(Constants.SENDER_PORTNO, senderPortNo);
+		jsonObject.put(Constants.RECEIVER_NAME, receiverName);
+		jsonObject.put(Constants.RECEIVER_IP_ADDRESS, receiverIPAddress);
+		jsonObject.put(Constants.RECEIVER_PORTNO, receiverPortNo);
+		jsonObject.put(Constants.FILE_NAME, fileName);
+		
+		JSONArray ja = new JSONArray();
+		ja.put(jsonObject);
+		
+		JSONObject mainObj = new JSONObject();
+		mainObj.put(Constants.CLIENT_FILE_SEND_REQUEST, ja);
+
+		// Add the task to map
+		information.put(Constants.CLIENT_FILE_SEND_REQUEST, mainObj.toString().getBytes());
+					
+		//System.out.println(jo.toString());
+		Socket socket = socketConnect(senderIPAddress, senderPortNo);
+		sendBytesThroughSocket(socket, information);
+	}
+	
+	
+	/**
+	 * Function takes care of saving client information
+	 * @param jsonString
+	 * @throws JSONException
+	 */
+	public void executeServerSaveClientInformationRequest(String jsonString) throws JSONException{
+		JSONObject jo = new JSONObject(jsonString);
+		
+		//Save to DB
+		PersistantManager persistantManager = PersistantManager.getInstance();
+		persistantManager.addUser(jo.toString());
+		
+		//Create a User object and add it to proximity manager
+		User user = CommonUtility.createUser(jo.toString());
+	    proximityManager.addUser(user);
+		
+		//System.out.println(jo.toString());
+	}
+	
+	
+	/**
+	 * Function takes care of file receive request
+	 * @param jsonString
+	 * @param fileBytes
+	 * @throws JSONException
+	 */
+	public void executeClientFileRecieveRequest(String jsonString, byte fileBytes[]) throws JSONException{
+		JSONObject jo = new JSONObject(jsonString);
+		JSONArray jarr = jo.getJSONArray(Constants.FILE_DETAILS);
+
+		//Extract the client_file_recieve_request information
+		String fileName = jarr.getJSONObject(0).getString(Constants.FILE_NAME);
+		String from = jarr.getJSONObject(0).getString(Constants.FROM);
+
+		//Process the bytes received from sender and construct the file out of it
+		recieveFile(fileBytes, fileName);
+	}
+	
+	
 	/**
 	 * Function takes a file byte array and writes it to a file
-	 * 
 	 * @param bytes
 	 * @param fileName
 	 */
@@ -214,7 +318,6 @@ public class CommonUtility {
 
 	/**
 	 * Starts the server socket
-	 * 
 	 * @param portNo
 	 */
 	@SuppressWarnings("unchecked")
@@ -224,7 +327,6 @@ public class CommonUtility {
 				currentPort = portNo;
 
 			ServerSocket serverSocket = new ServerSocket(currentPort);
-			ProximityManager proximityManager = ProximityManager.getInstance();
 			try {
 				while (true) {
 					Socket socket = serverSocket.accept();
@@ -236,47 +338,28 @@ public class CommonUtility {
 					//Server receives Save/Update client request using which it parses the client information and saves in DB
 					if (infoMap.containsKey(Constants.SERVER_SAVE_CLIENT_INFORMATION)) {
 						String s = new String(infoMap.get(Constants.SERVER_SAVE_CLIENT_INFORMATION));
-						JSONObject jo = new JSONObject(s);
-						User user;
-						
-						PersistantManager persistantManager = PersistantManager.getInstance();
-						persistantManager.addUser(jo.toString());
-						
-					    user = CommonUtility.createUser(jo.toString());
-					    proximityManager.addUser(user);
-						
-						System.out.println(jo.toString());
+						executeServerSaveClientInformationRequest(s);
 					}
 
 					//Server receives Share request using which it checks the nearest node
 					else if (infoMap.containsKey(Constants.SERVER_SHARE_REQUEST)) {
 						String s = new String(infoMap.get(Constants.SERVER_SHARE_REQUEST));
-						JSONObject jo = new JSONObject(s);
-						
-						String fileName = jo.getString(Constants.FILE_NAME);
-						String recipient_user_id = jo.getString(Constants.RECIPIENT_USER_ID);
-						User user = proximityManager.getNearestUserToDest(fileName, recipient_user_id.hashCode());
-						System.out.println(jo.toString());
+						executeServerShareRequest(s);
 					}
 
 					//Client receives send request using which it will send file bytes to the recipient
 					else if (infoMap.containsKey(Constants.CLIENT_FILE_SEND_REQUEST)) {
-
+						String s = new String(infoMap.get(Constants.CLIENT_FILE_SEND_REQUEST));
+						executeClientFileSendRequest(s);
 					}
 
 					//Client receives file recieve request using which it downlaods the file bytes
 					else if (infoMap.containsKey(Constants.CLIENT_FILE_RECEIEVE_REQUEST)) {
 						String s = new String(infoMap.get(Constants.CLIENT_FILE_RECEIEVE_REQUEST));
-						JSONObject jo = new JSONObject(s);
-						JSONArray jarr = jo.getJSONArray(Constants.FILE_DETAILS);
-
-						String fileName = jarr.getJSONObject(0).getString(Constants.FILE_NAME);
-						String from = jarr.getJSONObject(0).getString(Constants.FROM);
-
-						byte fileBytes[] = infoMap.get(Constants.FILE);
-						recieveFile(fileBytes, fileName);
+						executeClientFileRecieveRequest(s, infoMap.get(Constants.FILE));
 					}
-
+					
+					//Done processing of tasks, close the object stream
 					objInp.close();
 				}
 			} 
@@ -292,16 +375,16 @@ public class CommonUtility {
 		}
 	}
 
+	
 	/**
-	 * @return Build the JSON string containing the client information when the
-	 *         system boots up for the first time
+	 * @return Build the JSON string containing the client information when the system boots up for the first time
 	 */
 	public String getJSONClientInfo() {
 		String val = null;
 		return val;
-
 	}
 
+	
 	/**
 	 * @return The ip address of the current system
 	 */
@@ -310,14 +393,24 @@ public class CommonUtility {
 		return val;
 	}
 
+	
+	/**
+	 * @return the current state of the client - offline or online
+	 */
 	public Boolean getClientState() {
 		return state;
 	}
 
+	
+	/**
+	 * Set the current state of the client
+	 * @param value
+	 */
 	public void setClientState(Boolean value) {
 		state = value;
 	}
 
+	
 	/**
 	 * @return 5 digit port no which is unused by the system
 	 */
@@ -326,6 +419,7 @@ public class CommonUtility {
 		return val;
 	}
 
+	
 	/**
 	 * @return x,y co-ordinates of the users location
 	 */
@@ -333,10 +427,16 @@ public class CommonUtility {
 		return new Point(getRandomInteger(0, 30), getRandomInteger(0, 30));
 	}
 
+	
+	/**
+	 * Set new x,y co-ordinates
+	 * @param updatedLoc
+	 */
 	public void setMyGeoCoordinates(Point updatedLoc){
 		cord = updatedLoc;
 	}
 
+	
 	/**
 	 * @return a random integer between the low-high range
 	 */
@@ -344,6 +444,7 @@ public class CommonUtility {
 		return (int) ((Math.random() * (high - low)) + low);
 	}
 
+	
 	/**
 	 * @return the current logged-in used id
 	 */
@@ -351,6 +452,7 @@ public class CommonUtility {
 		return System.getProperty("user.name");
 	}
 
+	
 	/**
 	 * Creates a shared directory under users home directory
 	 * 
@@ -364,6 +466,7 @@ public class CommonUtility {
 		}
 	}
 
+	
 	/**
 	 * This method sends information to Server for processing
 	 * 
@@ -402,11 +505,10 @@ public class CommonUtility {
 			}
 
 		}
-
 		return list;
 	}
 
-
+	
 	/**
 	 * Send byte information to through the connected socket
 	 * 
@@ -428,6 +530,7 @@ public class CommonUtility {
 		}
 	}
 
+	
 	/**
 	 * @param client
 	 * @param userId
@@ -439,6 +542,7 @@ public class CommonUtility {
 		return user;
 	}
 
+	
 	/**
 	 * @param x
 	 * @param y
@@ -449,6 +553,7 @@ public class CommonUtility {
 		return r;
 	}
 
+	
 	/**
 	 * @param lattitude
 	 * @param longitude
@@ -460,6 +565,7 @@ public class CommonUtility {
 		return new GeoLocation(lattitude, longitude, state, country);
 	}
 
+	
 	/**
 	 * @param location
 	 * @param ip
@@ -470,6 +576,7 @@ public class CommonUtility {
 		return new ClientData(location, ip, port);
 	}
 
+	
 	/**
 	 * @param checksum
 	 * @param version
@@ -480,6 +587,7 @@ public class CommonUtility {
 		return new UserFileMetaData(checksum, version, fileName);
 	}
 
+	
 	/**
 	 * @param userId
 	 * @param location
@@ -492,6 +600,7 @@ public class CommonUtility {
 		return createUser(createClient(location, ip, port), userId, uid, list);
 	}
 
+	
 	/**
 	 * @param userId
 	 * @param lattitude
@@ -515,6 +624,7 @@ public class CommonUtility {
 		return user;
 	}
 
+	
 	/**
 	 * @param userId
 	 * @param lattitude
@@ -531,6 +641,7 @@ public class CommonUtility {
 		return user;
 	}
 
+	
 	/**
 	 * @param jUserInfo
 	 * @return
@@ -571,6 +682,7 @@ public class CommonUtility {
 		return null;
 	}
 
+	
 	/**
 	 * @param x1
 	 * @param y1
@@ -599,6 +711,7 @@ public class CommonUtility {
 		return jArr.toString();
 	}
 
+	
 	/**
 	 * Returns a JSON String from Client Information
 	 * @return
@@ -627,6 +740,7 @@ public class CommonUtility {
 		return mainObj.toString();
 	}
 
+	
 	/**
 	 * Function to insert into the database
 	 * @param jsonString
@@ -701,6 +815,7 @@ public class CommonUtility {
 		}
 	}
 
+	
 	/**
 	 * Function to delete a record in database
 	 * @param id
@@ -739,6 +854,7 @@ public class CommonUtility {
 		sendBytesThroughSocket(socket , information);
 	}
 
+	
 	/**
 	 * @throws JSONException
 	 * @throws IOException

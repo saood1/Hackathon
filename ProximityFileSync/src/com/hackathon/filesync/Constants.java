@@ -24,16 +24,18 @@ public class Constants {
 	public static final String CLIENT_FILE_SEND_REQUEST		     = "CLIENT_FILE_SEND_REQUEST";
 	public static final String SERVER_SHARE_REQUEST 			 = "SERVER_SHARE_REQUEST";
 	
-	public static final String TASK_INFORMATION                  = "TASK_INFORMATION";
-	public static final String SEND_FILE                         = "SEND_FILE";
-	public static final String RECEIVE_FILE                      = "RECEIVE_FILE";
-	
-	
+	//JSON Sender/Receiver Information keys
 	public static final String FILE                              = "FILE";
 	public static final String FILES                             = "FILES";
 	public static final String FILE_DETAILS                      = "FILE_DETAILS";
 	public static final String FILE_NAME                         = "FILE_NAME";
 	public static final String FROM                              = "FROM";
+	public static final String SENDER_NAME                       = "SENDER_NAME";
+	public static final String SENDER_IPADDRESS                  = "SENDER_IPADDRESS";
+	public static final String SENDER_PORTNO                     = "SENDER_PORTNO";
+	public static final String RECEIVER_NAME                     = "RECEIVER_NAME";
+	public static final String RECEIVER_IP_ADDRESS               = "RECEIVER_IP_ADDRESS";
+	public static final String RECEIVER_PORTNO                   = "RECEIVER_PORTNO";
 	
 	//Shared dir name
 	public static final String SHARED_DIR                        = System.getProperty("user.home") + "/hackathon_share/";

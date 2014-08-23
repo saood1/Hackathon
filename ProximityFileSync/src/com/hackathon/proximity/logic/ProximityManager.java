@@ -32,51 +32,40 @@ public class ProximityManager {
 		super();
 	}
 
-	public Boolean isFileAvailable(String checksum)
-	{
+	public Boolean isFileAvailable(String checksum) {
 		return m_mapFromChecksumToProximityUsersRTree.get(checksum).size() != 0;
-
 	}
 
-	public void addUser(User user)
-	{
+	public void addUser(User user){
 		User userOrg = m_mapFromIdToUser.get(user.getUid());
-		if(null != userOrg)
-		{
+		if(null != userOrg) {
 			updateUser(user);
 			return;
 		}	
 
 		m_mapFromIdToUser.put(user.getUid(), user);
-		for (UserFileMetaData fileInfo : user.getUserFileMetaDataList())
-		{
+		for (UserFileMetaData fileInfo : user.getUserFileMetaDataList()) {
 			SpatialIndex dbNearestRTree = m_mapFromChecksumToProximityUsersRTree.get(fileInfo.getChecksum());
 
-			if(null == dbNearestRTree)
-			{				
+			if(null == dbNearestRTree){				
 				dbNearestRTree = new RTree();
 				dbNearestRTree.init(null);
 				dbNearestRTree.add(CommonUtility.getPointRectangle(user.getX(), user.getY()), user.getUid());
 				m_mapFromChecksumToProximityUsersRTree.put(fileInfo.getChecksum(), dbNearestRTree);
 			}
-			else
-			{
+			else{
 				dbNearestRTree.add(CommonUtility.getPointRectangle(user.getX(), user.getY()), user.getUid());
 			}
 		}      	
-
 	}
 
-	public Boolean isUserAvailable(String userID)
-	{
+	public Boolean isUserAvailable(String userID) {
 		return m_mapFromIdToUser.get(userID) != null;
 	}
 
-	public Boolean updateUser(User user)
-	{
+	public Boolean updateUser(User user) {
 		User userOrg = m_mapFromIdToUser.get(user.getUid());
-		if(null == userOrg)
-		{
+		if(null == userOrg)	{
 			return false;
 		}	
 		removeUser(user.getUid());
@@ -84,45 +73,32 @@ public class ProximityManager {
 		return true;
 	}
 
-	public void removeUser(Integer uid)
-	{
+	public void removeUser(Integer uid){
 		User user = m_mapFromIdToUser.get(uid);
-		for (UserFileMetaData fileInfo : user.getUserFileMetaDataList())
-		{				
+		for (UserFileMetaData fileInfo : user.getUserFileMetaDataList()) {				
 			SpatialIndex dbNearestRTree = m_mapFromChecksumToProximityUsersRTree.get(fileInfo.getChecksum());
-			if(null != dbNearestRTree)
-			{
-
-
+			if(null != dbNearestRTree) {
 				dbNearestRTree.delete(CommonUtility.getPointRectangle(user.getX(), user.getY()), user.getUid());
-
-				if(dbNearestRTree.size() == 0)
-				{
+				if(dbNearestRTree.size() == 0) {
 					m_mapFromChecksumToProximityUsersRTree.remove(fileInfo.getChecksum());		
 				}
 			}				
 		}
-
 		m_mapFromIdToUser.remove(uid);		
-
 	}
 
-	public void clear()
-	{
+	public void clear(){
 		m_mapFromIdToUser.clear();
 		m_mapFromChecksumToProximityUsersRTree.clear();
 	}
 
-	public User getNearestUserToDest(String checksum, Integer uid)
-	{
+	public User getNearestUserToDest(String checksum, Integer uid){
 		User destUser = m_mapFromIdToUser.get(uid);
 		return getNearestUserToDest(checksum, destUser);
 	}
 
-	public User getNearestUserToDest(String checksum, User destUser)
-	{
-		if(!isFileAvailable(checksum))
-		{
+	public User getNearestUserToDest(String checksum, User destUser){
+		if(!isFileAvailable(checksum)){
 			return null;
 		}
 
@@ -130,16 +106,17 @@ public class ProximityManager {
 		SpatialIndex dbNearestRTree = m_mapFromChecksumToProximityUsersRTree.get(checksum);
 
 		TIntProcedure proc =  new TIntProcedure() {
-
 			public boolean execute(int i) {
-
 				id= i;
 				return true;
 			}
 		};
 		dbNearestRTree.nearestN(dstUserLocation, proc, 1, Float.MAX_VALUE);
-
 		return m_mapFromIdToUser.get(id);
-
 	}
+	
+	public User getUserFromIdMap(int userId){
+		return m_mapFromIdToUser.get(userId);
+	}
+	
 }
