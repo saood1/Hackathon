@@ -109,6 +109,22 @@ public class CommonUtility {
 		sendClientInformationToServer(Constants.SERVER_SAVE_CLIENT_INFORMATION, jsonClientInfoString);
 	}
 
+	/**
+	 * update the client info 
+	 * @throws UnknownHostException
+	 * @throws IOException
+	 * @throws InterruptedException
+	 * @throws JSONException
+	 */
+	public void updateClientInformation() throws UnknownHostException, IOException, InterruptedException, JSONException{
+		fileList = getMyFiles(Constants.SHARED_DIR);
+		String jsonClientInfoString = constructJSONClientInformation();
+		System.out.println("JSON String = " + jsonClientInfoString.toString());
+
+		//Send the client information to the server
+		sendClientInformationToServer(Constants.SERVER_SAVE_CLIENT_INFORMATION, jsonClientInfoString);
+	}
+
 
 	/**
 	 * Create a socket connection, if the connection fails keep re-trying every
@@ -381,6 +397,8 @@ public class CommonUtility {
 					else if (infoMap.containsKey(Constants.CLIENT_FILE_RECEIEVE_REQUEST)) {
 						String s = new String(infoMap.get(Constants.CLIENT_FILE_RECEIEVE_REQUEST));
 						executeClientFileRecieveRequest(s, infoMap.get(Constants.FILE));
+						//updating the server for client information
+						updateClientInformation() ;
 					}
 
 					//Done processing of tasks, close the object stream
