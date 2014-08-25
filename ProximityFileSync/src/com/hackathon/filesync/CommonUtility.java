@@ -797,7 +797,14 @@ public class CommonUtility {
 			DBCollection collection = db.getCollection("UserCollection");
 
 			try {
-				DBObject dbObject =  (DBObject) JSON.parse(jsonString);
+
+				JSONObject jo = new JSONObject(jsonString);
+				JSONArray jarr = jo.getJSONArray(Constants.CLIENT_DETAILS);
+
+				JSONObject JsonObj = jarr.getJSONObject(0);
+				String juserinfo = JsonObj.toString();
+
+				DBObject dbObject =  (DBObject) JSON.parse(juserinfo);
 
 				int id = (Integer) dbObject.get("UUID");
 
@@ -814,6 +821,10 @@ public class CommonUtility {
 				return true;
 			}
 			catch(JSONParseException e){
+				System.out.println("error");
+				return false;
+			}catch(JSONException e)
+			{
 				System.out.println("error");
 				return false;
 			}
@@ -845,11 +856,19 @@ public class CommonUtility {
 			DBCursor cursor = collection.find();
 
 			while(cursor.hasNext()) {
-				results.add(cursor.next().toString());
+				JSONObject jo = new JSONObject(cursor.next().toString());
+				jo.remove("_id");
+				JSONObject jo1 = new JSONObject();
+				JSONArray ja = new JSONArray("["+jo.toString()+"]");
+				jo1.put("CLIENT_DETAILS", ja);
+				results.add(jo1.toString());
 			}
 			return results;
 		}
 		catch(MongoException e)	{
+			e.printStackTrace();
+			return results;
+		}catch (JSONException e) {
 			e.printStackTrace();
 			return results;
 		}
