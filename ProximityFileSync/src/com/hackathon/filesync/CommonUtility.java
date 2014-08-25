@@ -484,7 +484,7 @@ public class CommonUtility {
 	 * @return x,y co-ordinates of the users location
 	 */
 	public Point getMyGeoCordinates() {
-		return new Point(getRandomInteger(0, 0), getRandomInteger(0, 10));
+		return new Point(0, getRandomInteger(0, 10));
 	}
 
 
