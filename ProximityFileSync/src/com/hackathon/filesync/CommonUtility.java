@@ -129,7 +129,7 @@ public class CommonUtility {
 				connected = true;
 			} 
 			catch (Exception e) {
-				System.out.println("AN exception occured while connecting to a socket with IP =" + hostIp + " and portNo = " + portNo);
+				System.out.println("An exception occured while connecting to a socket with IP =" + hostIp + " and portNo = " + portNo);
 				connected = false;
 				try {
 					TimeUnit.SECONDS.sleep(3);
@@ -324,7 +324,7 @@ public class CommonUtility {
 		BufferedOutputStream bos = null;
 
 		try {
-			fos = new FileOutputStream("/Users/mohamed.khan/" + fileName);
+			fos = new FileOutputStream(Constants.SHARED_DIR + fileName);
 			bos = new BufferedOutputStream(fos);
 			bos.write(bytes);
 			bos.flush();
