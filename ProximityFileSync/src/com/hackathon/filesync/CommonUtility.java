@@ -325,6 +325,8 @@ public class CommonUtility {
 		String fileName = jarr.getJSONObject(0).getString(Constants.FILE_NAME);
 		String from = jarr.getJSONObject(0).getString(Constants.FROM);
 
+		System.out.println("File received from " + from);
+		
 		//Process the bytes received from sender and construct the file out of it
 		recieveFile(fileBytes, fileName);
 	}
@@ -381,7 +383,11 @@ public class CommonUtility {
 						System.out.println("JSON string received for SERVER_SAVE_CLIENT_INFORMATION : " + s);
 						executeServerSaveClientInformationRequest(s);
 					}
-
+					else if (infoMap.containsKey(Constants.CLIENT_UPDATE_INFO)) {
+						String s = new String(infoMap.get(Constants.CLIENT_UPDATE_INFO));
+						System.out.println("JSON string received for CLIENT_UPDATE_INFO : " + s);
+						executeServerSaveClientInformationRequest(s);
+					}
 					//Server receives Share request using which it checks the nearest node
 					else if (infoMap.containsKey(Constants.SERVER_SHARE_REQUEST)) {
 						String s = new String(infoMap.get(Constants.SERVER_SHARE_REQUEST));
@@ -398,6 +404,7 @@ public class CommonUtility {
 					else if (infoMap.containsKey(Constants.CLIENT_FILE_RECEIEVE_REQUEST)) {
 						String s = new String(infoMap.get(Constants.CLIENT_FILE_RECEIEVE_REQUEST));
 						executeClientFileRecieveRequest(s, infoMap.get(Constants.FILE));
+
 						//updating the server for client information
 						updateClientInformation() ;
 					}
@@ -477,7 +484,7 @@ public class CommonUtility {
 	 * @return x,y co-ordinates of the users location
 	 */
 	public Point getMyGeoCordinates() {
-		return new Point(getRandomInteger(0, 30), getRandomInteger(0, 30));
+		return new Point(getRandomInteger(0, 0), getRandomInteger(0, 10));
 	}
 
 
