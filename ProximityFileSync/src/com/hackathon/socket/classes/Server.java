@@ -32,7 +32,8 @@ public class Server {
 		socketServer.start();
 		
 		TimeUnit.SECONDS.sleep(5);
-		CommonUtility.getInstance().initializeFileSync();
+		CommonUtility.getInstance().initializeFileSync(true);
+		
 		//load user info from db
 		BootStraper.start();
 		//This is a test function to check sending and receiving a file on the client side.

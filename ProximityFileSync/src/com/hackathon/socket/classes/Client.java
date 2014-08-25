@@ -34,7 +34,7 @@ public class Client {
 		};
 		
 		socket.start();
-		CommonUtility.getInstance().initializeFileSync();
+		CommonUtility.getInstance().initializeFileSync(false);
 		
 		/*
 		 * Terminal Logic

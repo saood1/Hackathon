@@ -96,7 +96,11 @@ public class CommonUtility {
 	 * @throws InterruptedException
 	 * @throws JSONException
 	 */
-	public void initializeFileSync() throws UnknownHostException, IOException, InterruptedException, JSONException{
+	public void initializeFileSync(boolean isServer) throws UnknownHostException, IOException, InterruptedException, JSONException{
+		//Server has fixed portno
+		if(isServer)
+			setServerPortNo(Constants.SERVER_PORT_NO);
+		
 		//Create users shared directory if not already created
 		createUserSharedDir(Constants.SHARED_DIR);
 
@@ -332,11 +336,6 @@ public class CommonUtility {
 		TimeUnit.SECONDS.sleep(5);
 		
 		try {
-			if(currentPort==null)
-				currentPort = portNo;
-			else
-				portNo = currentPort;
-			
 			ServerSocket serverSocket = new ServerSocket(currentPort);
 			try {
 				while (true) {
@@ -345,10 +344,11 @@ public class CommonUtility {
 
 					ObjectInputStream objInp = new ObjectInputStream(socket.getInputStream());
 					HashMap<String, byte[]> infoMap = (HashMap<String, byte[]>) objInp.readObject();
-
+					
 					//Server receives Save/Update client request using which it parses the client information and saves in DB
 					if (infoMap.containsKey(Constants.SERVER_SAVE_CLIENT_INFORMATION)) {
 						String s = new String(infoMap.get(Constants.SERVER_SAVE_CLIENT_INFORMATION));
+						System.out.println("JSON string received for SERVER_SAVE_CLIENT_INFORMATION : " + s);
 						executeServerSaveClientInformationRequest(s);
 					}
 
@@ -548,7 +548,7 @@ public class CommonUtility {
 			objOut.close();
 		} 
 		finally {
-			socket.close();
+			//socket.close();
 		}
 	}
 
