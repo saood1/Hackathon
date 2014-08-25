@@ -16,28 +16,23 @@ public class Server {
 		Thread socketServer = new Thread(){
 			public void run(){
 				try {
-					try {
-						CommonUtility.getInstance().startSocket(Constants.SERVER_PORT_NO);
-					} 
-					catch (InterruptedException e) {
-						e.printStackTrace();
-					}
+					CommonUtility.getInstance().startSocket(true);
 				} 
-				catch (UnknownHostException e) {
+				catch (InterruptedException e) {
 					e.printStackTrace();
-				}		
+				} 
+				catch (IOException e) {
+					e.printStackTrace();
+				} 
 			}
 		};
 		
+		//Start server socket
 		socketServer.start();
-		
+				
+		//Initialize server socket
 		TimeUnit.SECONDS.sleep(5);
-		CommonUtility.getInstance().initializeFileSync(true);
-		
-		//load user info from db
-		BootStraper.start();
-		//This is a test function to check sending and receiving a file on the client side.
-		//TimeUnit.SECONDS.sleep(5);
-		//CommonUtility.sendFile("127.0.0.1", Constants.SERVER_PORT_NO, "/Users/mohamed.khan/AutoUpdater.log");
+		CommonUtility.getInstance().initializeFileSync();
 	}
+		
 }

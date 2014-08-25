@@ -21,7 +21,7 @@ public class Client {
 			public void run(){
 				try {
 					try {
-						CommonUtility.getInstance().startSocket(null);
+						CommonUtility.getInstance().startSocket(false);
 					} 
 					catch (InterruptedException e) {
 						e.printStackTrace();
@@ -33,8 +33,12 @@ public class Client {
 			}
 		};
 		
+		//Start client socket
 		socket.start();
-		CommonUtility.getInstance().initializeFileSync(false);
+		
+		//Initialize client socket
+		TimeUnit.SECONDS.sleep(5);
+		CommonUtility.getInstance().initializeFileSync();
 		
 		/*
 		 * Terminal Logic

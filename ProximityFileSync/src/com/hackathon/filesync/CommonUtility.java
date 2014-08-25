@@ -96,11 +96,7 @@ public class CommonUtility {
 	 * @throws InterruptedException
 	 * @throws JSONException
 	 */
-	public void initializeFileSync(boolean isServer) throws UnknownHostException, IOException, InterruptedException, JSONException{
-		//Server has fixed portno
-		if(isServer)
-			setServerPortNo(Constants.SERVER_PORT_NO);
-		
+	public void initializeFileSync() throws UnknownHostException, IOException, InterruptedException, JSONException{
 		//Create users shared directory if not already created
 		createUserSharedDir(Constants.SHARED_DIR);
 
@@ -331,12 +327,14 @@ public class CommonUtility {
 	 * @throws InterruptedException 
 	 */
 	@SuppressWarnings("unchecked")
-	public void startSocket(Integer currentPort) throws InterruptedException {
-		//Wait until initialization completes
-		TimeUnit.SECONDS.sleep(5);
-		
+	public void startSocket(boolean isServer) throws InterruptedException {
 		try {
-			ServerSocket serverSocket = new ServerSocket(currentPort);
+			//Server has fixed port
+			if(isServer)
+				setServerPortNo(Constants.SERVER_PORT_NO);
+			
+			ServerSocket serverSocket = new ServerSocket(portNo);
+			
 			try {
 				while (true) {
 					Socket socket = serverSocket.accept();
@@ -436,9 +434,8 @@ public class CommonUtility {
 	/**
 	 * @return 5 digit port no which is unused by the system
 	 */
-	public int setServerPortNo(Integer portNo) {
-		int val = getRandomInteger(49152, 65534);
-		return val;
+	public void setServerPortNo(Integer serverPortNo) {
+		portNo = serverPortNo;
 	}
 	
 	
