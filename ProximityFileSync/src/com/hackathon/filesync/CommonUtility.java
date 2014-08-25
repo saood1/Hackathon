@@ -152,58 +152,61 @@ public class CommonUtility {
 	 * @throws InterruptedException
 	 * @throws JSONException
 	 */
-	public void executeClientFileSendRequest(String jsonString) throws UnknownHostException, IOException, InterruptedException, JSONException {
-		//Extract the server_share_request information
-		System.out.println(jsonString);
-		
-		JSONObject jo = new JSONObject(jsonString);
-		
-		JSONArray jarr = jo.getJSONArray(Constants.CLIENT_FILE_SEND_REQUEST);
-		JSONObject fileSendRequest = jarr.getJSONObject(0);
-		String senderIP = fileSendRequest.getString(Constants.RECEIVER_IP_ADDRESS);
-		String receiverIP = fileSendRequest.getString(Constants.RECEIVER_IP_ADDRESS);
-		Integer receiverPortNo = Integer.getInteger(jo.getString(Constants.RECEIVER_PORTNO));
-		
-		String filePath = Constants.SHARED_DIR + fileSendRequest.getString(Constants.FILE_NAME);
-		HashMap<String, byte[]> information = new HashMap<String, byte[]>();
+	public void executeClientFileSendRequest(String jsonString) throws UnknownHostException, IOException, InterruptedException {
+		try{
+			//Extract the server_share_request information
+			JSONObject jo = new JSONObject(jsonString);
+			
+			JSONArray jarr = jo.getJSONArray(Constants.CLIENT_FILE_SEND_REQUEST);
+			JSONObject fileSendRequest = jarr.getJSONObject(0);
+			String senderIP = fileSendRequest.getString(Constants.SENDER_IPADDRESS);
+			String receiverIP = fileSendRequest.getString(Constants.RECEIVER_IP_ADDRESS);
+			Integer receiverPortNo = fileSendRequest.getInt(Constants.RECEIVER_PORTNO);
+			
+			String filePath = Constants.SHARED_DIR + fileSendRequest.getString(Constants.FILE_NAME);
+			HashMap<String, byte[]> information = new HashMap<String, byte[]>();
 
-		// Read the file
-		File file = new File(filePath);
-		long length = file.length();
+			// Read the file
+			File file = new File(filePath);
+			long length = file.length();
 
-		// Create JSON object out of the strings
-		JSONObject jsobObject = new JSONObject();
-		jsobObject.put(Constants.FROM, senderIP);
-		jsobObject.put(Constants.FILE_NAME, file.getName());
+			// Create JSON object out of the strings
+			JSONObject jsobObject = new JSONObject();
+			jsobObject.put(Constants.FROM, senderIP);
+			jsobObject.put(Constants.FILE_NAME, file.getName());
 
-		JSONArray ja = new JSONArray();
-		ja.put(jsobObject);
+			JSONArray ja = new JSONArray();
+			ja.put(jsobObject);
 
-		JSONObject mainObj = new JSONObject();
-		mainObj.put(Constants.FILE_DETAILS, ja);
+			JSONObject mainObj = new JSONObject();
+			mainObj.put(Constants.FILE_DETAILS, ja);
 
-		// Add the task to map
-		information.put(Constants.CLIENT_FILE_RECEIEVE_REQUEST, mainObj.toString().getBytes());
+			// Add the task to map
+			information.put(Constants.CLIENT_FILE_RECEIEVE_REQUEST, mainObj.toString().getBytes());
 
-		// Initialize the byte array for transfer
-		byte[] fileBytes = new byte[(int) length];
+			// Initialize the byte array for transfer
+			byte[] fileBytes = new byte[(int) length];
 
-		// Open a InputStream for reading from file Object
-		FileInputStream fis = new FileInputStream(file);
-		BufferedInputStream bis = new BufferedInputStream(fis);
-		bis.read(fileBytes);
+			// Open a InputStream for reading from file Object
+			FileInputStream fis = new FileInputStream(file);
+			BufferedInputStream bis = new BufferedInputStream(fis);
+			bis.read(fileBytes);
 
-		// Add the file payload to the map
-		information.put(Constants.FILE, fileBytes);
+			// Add the file payload to the map
+			information.put(Constants.FILE, fileBytes);
 
-		try {
-			Socket socket = socketConnect(receiverIP, receiverPortNo);
-			sendBytesThroughSocket(socket, information);
-		} 
-		finally {
-			fis.close();
-			bis.close();
-		} 
+			try {
+				Socket socket = socketConnect(receiverIP, receiverPortNo);
+				sendBytesThroughSocket(socket, information);
+			} 
+			finally {
+				fis.close();
+				bis.close();
+			} 
+		}
+		catch (JSONException e){
+			e.printStackTrace();
+		}
 	}
 
 	
@@ -214,49 +217,54 @@ public class CommonUtility {
 	 * @throws IOException
 	 * @throws InterruptedException
 	 */
-	public void executeServerShareRequest(String jsonString) throws JSONException, IOException, InterruptedException{
-		//Hashmap for compiling the task information
-		HashMap<String, byte[]> information = new HashMap<String, byte[]>();
-		
-		//Extract the server_share_request information
-		JSONObject jo = new JSONObject(jsonString);
-		String fileName = jo.getString(Constants.FILE_NAME);
-		String receiverName = jo.getString(Constants.RECIPIENT_USER_ID);
-		Integer receiverUUID = receiverName.hashCode();
-		
-		//Using the proximityManager, get the receiver details
-		User receiverObj = proximityManager.getUserFromIdMap(receiverUUID);
-		String receiverIPAddress = receiverObj.getClient().getIp();
-		Integer receiverPortNo = receiverObj.getClient().getPort();
-		
-		//Find out who is the closes client to the receiver
-		User proximityUser = proximityManager.getNearestUserToDest(fileName, receiverUUID);
-		String senderName = proximityUser.getUserId();
-		String senderIPAddress = proximityUser.getClient().getIp();
-		Integer senderPortNo = proximityUser.getClient().getPort();
-		
-		//Prepare the JSON string for next task
-		JSONObject jsonObject = new JSONObject();
-		jsonObject.put(Constants.SENDER_NAME, senderName);
-		jsonObject.put(Constants.SENDER_IPADDRESS, senderIPAddress);
-		jsonObject.put(Constants.SENDER_PORTNO, senderPortNo);
-		jsonObject.put(Constants.RECEIVER_NAME, receiverName);
-		jsonObject.put(Constants.RECEIVER_IP_ADDRESS, receiverIPAddress);
-		jsonObject.put(Constants.RECEIVER_PORTNO, receiverPortNo);
-		jsonObject.put(Constants.FILE_NAME, fileName);
-		
-		JSONArray ja = new JSONArray();
-		ja.put(jsonObject);
-		
-		JSONObject mainObj = new JSONObject();
-		mainObj.put(Constants.CLIENT_FILE_SEND_REQUEST, ja);
+	public void executeServerShareRequest(String jsonString) throws IOException, InterruptedException{
+		try{
+			//Hashmap for compiling the task information
+			HashMap<String, byte[]> information = new HashMap<String, byte[]>();
+			
+			//Extract the server_share_request information
+			JSONObject jo = new JSONObject(jsonString);
+			String fileName = jo.getString(Constants.FILE_NAME);
+			String receiverName = jo.getString(Constants.RECIPIENT_USER_ID);
+			Integer receiverUUID = receiverName.hashCode();
+			
+			//Using the proximityManager, get the receiver details
+			User receiverObj = proximityManager.getUserFromIdMap(receiverUUID);
+			String receiverIPAddress = receiverObj.getClient().getIp();
+			Integer receiverPortNo = receiverObj.getClient().getPort();
+			
+			//Find out who is the closes client to the receiver
+			User proximityUser = proximityManager.getNearestUserToDest(fileName, receiverUUID);
+			String senderName = proximityUser.getUserId();
+			String senderIPAddress = proximityUser.getClient().getIp();
+			Integer senderPortNo = proximityUser.getClient().getPort();
+			
+			//Prepare the JSON string for next task
+			JSONObject jsonObject = new JSONObject();
+			jsonObject.put(Constants.SENDER_NAME, senderName);
+			jsonObject.put(Constants.SENDER_IPADDRESS, senderIPAddress);
+			jsonObject.put(Constants.SENDER_PORTNO, senderPortNo);
+			jsonObject.put(Constants.RECEIVER_NAME, receiverName);
+			jsonObject.put(Constants.RECEIVER_IP_ADDRESS, receiverIPAddress);
+			jsonObject.put(Constants.RECEIVER_PORTNO, receiverPortNo);
+			jsonObject.put(Constants.FILE_NAME, fileName);
+			
+			JSONArray ja = new JSONArray();
+			ja.put(jsonObject);
+			
+			JSONObject mainObj = new JSONObject();
+			mainObj.put(Constants.CLIENT_FILE_SEND_REQUEST, ja);
 
-		// Add the task to map
-		information.put(Constants.CLIENT_FILE_SEND_REQUEST, mainObj.toString().getBytes());
-					
-		//System.out.println(jo.toString());
-		Socket socket = socketConnect(senderIPAddress, senderPortNo);
-		sendBytesThroughSocket(socket, information);
+			// Add the task to map
+			information.put(Constants.CLIENT_FILE_SEND_REQUEST, mainObj.toString().getBytes());
+						
+			//System.out.println(jo.toString());
+			Socket socket = socketConnect(senderIPAddress, senderPortNo);
+			sendBytesThroughSocket(socket, information);	
+		}
+		catch (JSONException e){
+			e.printStackTrace();
+		}
 	}
 	
 	
