@@ -98,10 +98,13 @@ public class ProximityManager {
 	}
 
 	public User getNearestUserToDest(String checksum, User destUser){
+		
+		/*
 		if(!isFileAvailable(checksum)){
 			return null;
 		}
-
+		 */
+		
 		Point dstUserLocation = new Point(destUser.getX(), destUser.getY());
 		SpatialIndex dbNearestRTree = m_mapFromChecksumToProximityUsersRTree.get(checksum);
 

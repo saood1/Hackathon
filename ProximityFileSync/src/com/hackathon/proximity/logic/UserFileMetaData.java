@@ -1,5 +1,4 @@
 package com.hackathon.proximity.logic;
-import java.io.*;
 
 public class UserFileMetaData {
 	private String m_checksum;

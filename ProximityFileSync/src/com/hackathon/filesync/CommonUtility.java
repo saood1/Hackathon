@@ -154,12 +154,17 @@ public class CommonUtility {
 	 */
 	public void executeClientFileSendRequest(String jsonString) throws UnknownHostException, IOException, InterruptedException, JSONException {
 		//Extract the server_share_request information
+		System.out.println(jsonString);
+		
 		JSONObject jo = new JSONObject(jsonString);
-		String senderIP = jo.getString(Constants.RECEIVER_IP_ADDRESS);
-		String receiverIP = jo.getString(Constants.RECEIVER_IP_ADDRESS);
+		
+		JSONArray jarr = jo.getJSONArray(Constants.CLIENT_FILE_SEND_REQUEST);
+		JSONObject fileSendRequest = jarr.getJSONObject(0);
+		String senderIP = fileSendRequest.getString(Constants.RECEIVER_IP_ADDRESS);
+		String receiverIP = fileSendRequest.getString(Constants.RECEIVER_IP_ADDRESS);
 		Integer receiverPortNo = Integer.getInteger(jo.getString(Constants.RECEIVER_PORTNO));
 		
-		String filePath = Constants.SHARED_DIR + jo.getString(Constants.FILE_NAME);
+		String filePath = Constants.SHARED_DIR + fileSendRequest.getString(Constants.FILE_NAME);
 		HashMap<String, byte[]> information = new HashMap<String, byte[]>();
 
 		// Read the file
@@ -264,8 +269,8 @@ public class CommonUtility {
 		JSONObject jo = new JSONObject(jsonString);
 		
 		//Save to DB
-		PersistantManager persistantManager = PersistantManager.getInstance();
-		persistantManager.addUser(jo.toString());
+		//PersistantManager persistantManager = PersistantManager.getInstance();
+		//persistantManager.addUser(jo.toString());
 		
 		//Create a User object and add it to proximity manager
 		User user = CommonUtility.createUser(jo.toString());
@@ -319,13 +324,19 @@ public class CommonUtility {
 	/**
 	 * Starts the server socket
 	 * @param portNo
+	 * @throws InterruptedException 
 	 */
 	@SuppressWarnings("unchecked")
-	public void startSocket(Integer currentPort) {
+	public void startSocket(Integer currentPort) throws InterruptedException {
+		//Wait until initialization completes
+		TimeUnit.SECONDS.sleep(5);
+		
 		try {
 			if(currentPort==null)
 				currentPort = portNo;
-
+			else
+				portNo = currentPort;
+			
 			ServerSocket serverSocket = new ServerSocket(currentPort);
 			try {
 				while (true) {
@@ -353,7 +364,7 @@ public class CommonUtility {
 						executeClientFileSendRequest(s);
 					}
 
-					//Client receives file recieve request using which it downlaods the file bytes
+					//Client receives file receive request using which it downloads the file bytes
 					else if (infoMap.containsKey(Constants.CLIENT_FILE_RECEIEVE_REQUEST)) {
 						String s = new String(infoMap.get(Constants.CLIENT_FILE_RECEIEVE_REQUEST));
 						executeClientFileRecieveRequest(s, infoMap.get(Constants.FILE));
@@ -365,7 +376,10 @@ public class CommonUtility {
 			} 
 			catch (IOException e) {
 				System.out.println("An IOException occured " + e.getMessage());
-			} 
+			}
+			catch (Exception e) {
+				e.printStackTrace();
+			}
 			finally {
 				serverSocket.close();
 			}
@@ -419,6 +433,14 @@ public class CommonUtility {
 		return val;
 	}
 
+	/**
+	 * @return 5 digit port no which is unused by the system
+	 */
+	public int setServerPortNo(Integer portNo) {
+		int val = getRandomInteger(49152, 65534);
+		return val;
+	}
+	
 	
 	/**
 	 * @return x,y co-ordinates of the users location
@@ -538,7 +560,7 @@ public class CommonUtility {
 	 * @return
 	 */
 	public static User createUser(ClientData client, String userId,	Integer uid,List<UserFileMetaData> list) {
-		User user = new User(userId, uid, client);
+		User user = new User(userId, uid, client, list);
 		return user;
 	}
 

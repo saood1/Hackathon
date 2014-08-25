@@ -31,11 +31,12 @@ public class User {
 		this.uid = uid;
 	}
 
-	public User(String userId, Integer uid, ClientData client) {
+	public User(String userId, Integer uid, ClientData client, List<UserFileMetaData> fileMetaDataList) {
 		super();
 		this.m_userId = userId;
 		this.m_client = client;
 		this.uid = uid;
+		this.m_userFileMetaDataList = fileMetaDataList;
 	}
 
 	public String getUserId() {
@@ -46,13 +47,11 @@ public class User {
 		return m_userFileMetaDataList;
 	}
 
-	public void addFileMetaData(UserFileMetaData userFileMetaData)
-	{
+	public void addFileMetaData(UserFileMetaData userFileMetaData) {
 		m_userFileMetaDataList.add(userFileMetaData);
 	}
 
-	public void setUserFileMetaDataList(
-			List<UserFileMetaData> userFileMetaDataList) {
+	public void setUserFileMetaDataList(List<UserFileMetaData> userFileMetaDataList) {
 		this.m_userFileMetaDataList.addAll(userFileMetaDataList);
 	}
 

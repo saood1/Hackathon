@@ -4,7 +4,7 @@ public class Constants {
 	
 	//Server Details
 	public static final int SERVER_PORT_NO                       = 65535;
-	public static final String SERVER_IP_ADDRESS                 = "127.0.0.1";
+	public static final String SERVER_IP_ADDRESS                 = "10.204.27.20";
 	
 	//Strings for JSON Keys
 	public static final String PORT_NO                           = "PORTNO";
