@@ -10,6 +10,7 @@ import org.json.*;
 
 import com.hackathon.filesync.CommonUtility;
 import com.hackathon.filesync.Constants;
+import com.infomatiq.jsi.Point;
 
 public class Client {
 
@@ -54,7 +55,7 @@ public class Client {
 		
 		do
 		{
-			System.out.print("Enter command : ");
+			System.out.print("Enter next command : ");
 			BufferedReader buf = new BufferedReader(new InputStreamReader(System.in));
 			String cmd = buf.readLine();
 			
@@ -64,8 +65,9 @@ public class Client {
 			}
 			
 			//command --> updateLoc
+			//command --> updateLoc 5 10
 			else if(cmd.startsWith("updateLoc")){
-				updateClientLoc();
+				updateClientLoc(cmd);
 			}
 			
 			//command --> updateState [true/false]
@@ -81,7 +83,7 @@ public class Client {
 				isClientRunning = false;
 			}
 
-			System.out.println("isClientRunning : " +  isClientRunning);
+			//System.out.println("isClientRunning : " +  isClientRunning);
 		}while(isClientRunning);
 	}
 
@@ -92,9 +94,25 @@ public class Client {
 	 * @throws IOException
 	 * @throws InterruptedException
 	 */
-	private static void updateClientLoc() throws UnknownHostException, JSONException, IOException, InterruptedException {
-		CommonUtility.getInstance().setMyGeoCoordinates(CommonUtility.getInstance().getMyGeoCordinates());
-		CommonUtility.getInstance().sendUpdatedClientInfoToServer();
+	private static void updateClientLoc(String line) throws UnknownHostException, JSONException, IOException, InterruptedException {
+		String[] words =  line.split(" ");
+		
+		if(words.length == 1)
+		{
+			CommonUtility.getInstance().setMyGeoCoordinates(CommonUtility.getInstance().getMyGeoCordinates());
+			CommonUtility.getInstance().sendUpdatedClientInfoToServer();
+		}
+		else if(words.length == 3)
+		{
+			Point p = new Point(Integer.parseInt(words[1]) , Integer.parseInt(words[2]));
+			CommonUtility.getInstance().setMyGeoCoordinates(p);
+			CommonUtility.getInstance().sendUpdatedClientInfoToServer();
+		}
+		else
+		{
+			System.out.println("Format of updateState command is erroneous ..");
+			printHelpMenu();
+		}
 	}
 
 	/**
@@ -128,7 +146,7 @@ public class Client {
 		help += "\n";
 		help += "3. quit";
 		help += "\n";
-		help += "4. updateLoc";
+		help += "4. updateLoc or updateLoc x y";
 		help += "\n";
 		help += "5. updateState [true/false]";
 		help += "\n";

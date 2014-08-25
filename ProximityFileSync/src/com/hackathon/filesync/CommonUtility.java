@@ -346,7 +346,8 @@ public class CommonUtility {
 			bos.flush();
 			bos.close();
 			fos.close();
-		} catch (IOException e) {
+		} 
+		catch (IOException e) {
 			System.out.println(e.getLocalizedMessage());
 		}
 	}
