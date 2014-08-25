@@ -11,6 +11,7 @@ import com.hackathon.filesync.Constants;
 public class User {
 	private String m_userId;
 	private ClientData m_client;
+	private boolean isUserOnLine;
 	List<UserFileMetaData> m_userFileMetaDataList = new ArrayList<UserFileMetaData>();
 	float x, y;
 	public float getX() {
@@ -41,6 +42,14 @@ public class User {
 
 	public String getUserId() {
 		return m_userId;
+	}
+
+	public boolean isUserOnLine() {
+		return isUserOnLine;
+	}
+
+	public void setUserOnLine(boolean isUserOnLine) {
+		this.isUserOnLine = isUserOnLine;
 	}
 
 	public List<UserFileMetaData> getUserFileMetaDataList() {

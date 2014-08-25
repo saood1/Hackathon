@@ -46,6 +46,17 @@ public class PersistantManager {
 		}
 		return false;
 	}
+
+	public boolean removeUser(int uid)
+	{
+		try {
+			return CommonUtility.delete(uid);
+		} catch (UnknownHostException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return false;
+	}
 }
 
 
