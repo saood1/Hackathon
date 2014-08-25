@@ -129,6 +129,7 @@ public class CommonUtility {
 				connected = true;
 			} 
 			catch (Exception e) {
+				System.out.println("AN exception occured while connecting to a socket with IP =" + hostIp + " and portNo = " + portNo);
 				connected = false;
 				try {
 					TimeUnit.SECONDS.sleep(3);
