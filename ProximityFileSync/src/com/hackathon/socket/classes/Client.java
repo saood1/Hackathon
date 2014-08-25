@@ -20,7 +20,12 @@ public class Client {
 		Thread socket = new Thread(){
 			public void run(){
 				try {
-					CommonUtility.getInstance().startSocket(null);
+					try {
+						CommonUtility.getInstance().startSocket(null);
+					} 
+					catch (InterruptedException e) {
+						e.printStackTrace();
+					}
 				} 
 				catch (UnknownHostException e) {
 					e.printStackTrace();

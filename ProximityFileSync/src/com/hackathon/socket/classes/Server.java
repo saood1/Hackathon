@@ -16,7 +16,12 @@ public class Server {
 		Thread socketServer = new Thread(){
 			public void run(){
 				try {
-					CommonUtility.getInstance().startSocket(Constants.SERVER_PORT_NO);
+					try {
+						CommonUtility.getInstance().startSocket(Constants.SERVER_PORT_NO);
+					} 
+					catch (InterruptedException e) {
+						e.printStackTrace();
+					}
 				} 
 				catch (UnknownHostException e) {
 					e.printStackTrace();
