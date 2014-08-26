@@ -274,8 +274,14 @@ public class CommonUtility {
 			String senderIPAddress = proximityUser.getClient().getIp();
 			Integer senderPortNo = proximityUser.getClient().getPort();
 
+			//To receiver already has the file, so server ignores the requests
+			if(proximityUser.getUid() == receiverObj.getUid()){
+				printServerMessage("The client " + proximityUser.getUserId() + "I already have the file '" + fileName + "' Ignoring the request for now!");
+				return;
+			}
+			
 			printServerMessage("I found " + senderName + " to be the closest client to " + receiverName + ", sending a share request to " + senderName);
-
+			
 			//Prepare the JSON string for next task
 			JSONObject jsonObject = new JSONObject();
 			jsonObject.put(Constants.SENDER_NAME, senderName);
@@ -354,12 +360,6 @@ public class CommonUtility {
 		String from = jarr.getJSONObject(0).getString(Constants.SENDER_NAME);
 		
 		File f = new File(Constants.SHARED_DIR + fileName);
-		
-		//Check if the proximity user is Null
-		if(f.exists()){
-			printClientMessage(getMyUserID(), "I already have the file '" + fileName + "' Ignoring the request for now!");
-			return;
-		}
 		
 		printClientMessage(getMyUserID(), "Wow!!! ... I just recieved a file '" + fileName + "' from " + from);
 
