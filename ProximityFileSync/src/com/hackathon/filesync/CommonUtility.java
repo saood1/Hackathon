@@ -477,16 +477,17 @@ public class CommonUtility {
 	{
 		fileList.clear();
 		fileList = getMyFiles(Constants.SHARED_DIR);
+		
 		try {
 			sendUpdatedClientInfoToServer();
-		} catch (JSONException e) {
-			// TODO Auto-generated catch block
+		} 
+		catch (JSONException e) {
 			e.printStackTrace();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
+		} 
+		catch (IOException e) {
 			e.printStackTrace();
-		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
+		} 
+		catch (InterruptedException e) {
 			e.printStackTrace();
 		}
 	}
@@ -1004,7 +1005,6 @@ public class CommonUtility {
 	 */
 	public void sendUpdatedClientInfoToServer() throws JSONException, IOException, InterruptedException {
 		String jsonClientInfoString = constructJSONClientInformation();
-		System.out.println("JSON String = " + jsonClientInfoString.toString());
 		sendClientInformationToServer(Constants.CLIENT_UPDATE_INFO, jsonClientInfoString);
 	}
 	
@@ -1014,6 +1014,7 @@ public class CommonUtility {
 	 * @param message
 	 */
 	private static void printServerMessage(String message){
+		System.out.println();
 		System.out.println("Server: " + message);
 	}
 	
@@ -1038,6 +1039,7 @@ public class CommonUtility {
 	 * @param message
 	 */
 	private static void printClientMessage(String clientName, String message){
+		System.out.println();
 		System.out.println(clientName + ": " + message);
 	}
 }
