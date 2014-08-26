@@ -257,19 +257,18 @@ public class CommonUtility {
 
 			//Using the proximityManager, get the receiver details
 			User receiverObj = proximityManager.getUserFromIdMap(receiverUUID);
-			String receiverIPAddress = receiverObj.getClient().getIp();
-			Integer receiverPortNo = receiverObj.getClient().getPort();
 
-			//Find out who is the closes client to the receiver
-			
-			User proximityUser = proximityManager.getNearestUserToDest(fileName, receiverUUID);
-			
 			//Check if the proximity user is Null
-			if(null == proximityUser){
+			if(null == receiverObj){
 				printServerMessage("I see that " + receiverName + " is offline, I cannot share a file with him at the moment, Ignoring the request for now!");
 				return;
 			}
 			
+			String receiverIPAddress = receiverObj.getClient().getIp();
+			Integer receiverPortNo = receiverObj.getClient().getPort();
+
+			//Find out who is the closes client to the receiver
+			User proximityUser = proximityManager.getNearestUserToDest(fileName, receiverUUID);
 			String senderName = proximityUser.getUserId();
 			String senderIPAddress = proximityUser.getClient().getIp();
 			Integer senderPortNo = proximityUser.getClient().getPort();
