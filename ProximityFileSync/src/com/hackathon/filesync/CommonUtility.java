@@ -265,7 +265,7 @@ public class CommonUtility {
 			User proximityUser = proximityManager.getNearestUserToDest(fileName, receiverUUID);
 			
 			//Check if the proximity user is Null
-			if(null == proximityUser || proximityUser.getUid() == receiverObj.getUid()){
+			if(null == proximityUser){
 				printServerMessage("I see that " + receiverName + " is offline, I cannot share a file with him at the moment, Ignoring the request for now!");
 				return;
 			}
@@ -352,7 +352,15 @@ public class CommonUtility {
 		//Extract the client_file_recieve_request information
 		String fileName = jarr.getJSONObject(0).getString(Constants.FILE_NAME);
 		String from = jarr.getJSONObject(0).getString(Constants.SENDER_NAME);
-
+		
+		File f = new File(Constants.SHARED_DIR + fileName);
+		
+		//Check if the proximity user is Null
+		if(f.exists()){
+			printClientMessage(getMyUserID(), "I already have the file '" + fileName + "' Ignoring the request for now!");
+			return;
+		}
+		
 		printClientMessage(getMyUserID(), "Wow!!! ... I just recieved a file '" + fileName + "' from " + from);
 
 		//Process the bytes received from sender and construct the file out of it
