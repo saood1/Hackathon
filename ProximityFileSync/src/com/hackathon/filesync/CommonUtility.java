@@ -170,7 +170,7 @@ public class CommonUtility {
 	 */
 	public void executeClientFileSendRequest(String jsonString) throws UnknownHostException, IOException, InterruptedException {
 		try{
-			//Extract the server_share_request information
+			//Extract the client_file_request information
 			JSONObject jo = new JSONObject(jsonString);
 
 			JSONArray jarr = jo.getJSONArray(Constants.CLIENT_FILE_SEND_REQUEST);
