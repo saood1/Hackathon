@@ -186,6 +186,7 @@ public class Client {
 				JSONObject sh = new JSONObject();
 				sh.put(Constants.FILE_NAME, words[1].toString());
 				sh.put(Constants.RECIPIENT_USER_ID, words[2].toString());
+				sh.put(Constants.SENDER_USER_ID, CommonUtility.getInstance().getMyUserID());
 				CommonUtility.getInstance().sendFileShareRequestToServer(sh.toString());
 			}
 			else

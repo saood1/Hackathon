@@ -104,8 +104,7 @@ public class CommonUtility {
 		//Create client info json string
 		setClientState(true);
 		String jsonClientInfoString = constructJSONClientInformation();
-		System.out.println("JSON String = " + jsonClientInfoString.toString());
-
+		
 		//Send the client information to the server
 		sendClientInformationToServer(Constants.SERVER_SAVE_CLIENT_INFORMATION, jsonClientInfoString);
 	}
@@ -120,8 +119,7 @@ public class CommonUtility {
 	public void updateClientInformation() throws UnknownHostException, IOException, InterruptedException, JSONException{
 		fileList = getMyFiles(Constants.SHARED_DIR);
 		String jsonClientInfoString = constructJSONClientInformation();
-		System.out.println("JSON String = " + jsonClientInfoString.toString());
-
+		
 		//Send the client information to the server
 		sendClientInformationToServer(Constants.SERVER_SAVE_CLIENT_INFORMATION, jsonClientInfoString);
 	}
@@ -243,10 +241,11 @@ public class CommonUtility {
 			//Extract the server_share_request information
 			JSONObject jo = new JSONObject(jsonString);
 			String fileName = jo.getString(Constants.FILE_NAME);
+			String fromName = jo.getString(Constants.SENDER_USER_ID);
 			String receiverName = jo.getString(Constants.RECIPIENT_USER_ID);
 			Integer receiverUUID = receiverName.hashCode();
 
-			printClientMessage(getMyUserID(), "I wish to share a file '" + fileName + "' with " + receiverName + ", can you help me find the closest client who can deliver this");
+			printClientMessage(fromName, "I wish to share a file '" + fileName + "' with " + receiverName + ", can you help me find the closest client who can deliver this");
 			
 			//Using the proximityManager, get the receiver details
 			User receiverObj = proximityManager.getUserFromIdMap(receiverUUID);

@@ -12,6 +12,7 @@ public class Constants {
 	public static final String XCORDINATES                       = "XCORDINATES";
 	public static final String YCORDINATES                       = "YCORDINATES";
 	public static final String USER_ID                           = "USER_ID";
+	public static final String SENDER_USER_ID                    = "SENDER_USER_ID";
 	public static final String RECIPIENT_USER_ID                 = "RECIPIENT_USER_ID";
 	public static final String UUID                              = "UUID";
 	public static final String ONLINE                            = "ONLINE";
