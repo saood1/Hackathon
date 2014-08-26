@@ -96,6 +96,9 @@ public class ProximityManager {
 
 	public User getNearestUserToDest(String checksum, Integer uid){
 		User destUser = m_mapFromIdToUser.get(uid);
+		if(null == destUser){
+			return null;
+		}
 		return getNearestUserToDest(checksum, destUser);
 	}
 

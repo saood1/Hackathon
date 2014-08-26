@@ -188,8 +188,8 @@ public class CommonUtility {
 			File file = new File(filePath);
 			long length = file.length();
 
-			if(senderIP.equals(receiverIP)){
-				printClientMessage(senderName, "What the ****!!! '" + file.getName() + "' I already have this file. ");
+			if(file.exists()){
+				printClientMessage(senderName, "I seem to have the file '" + file.getName() + "', I am ingnoring the file request for now!!");
 				return;
 			}
 			
@@ -261,7 +261,15 @@ public class CommonUtility {
 			Integer receiverPortNo = receiverObj.getClient().getPort();
 
 			//Find out who is the closes client to the receiver
+			
 			User proximityUser = proximityManager.getNearestUserToDest(fileName, receiverUUID);
+			
+			//Check if the proximity user is Null
+			if(null == proximityUser){
+				printServerMessage("I see that " + receiverName + " is offline, I cannot share a file with him at the moment, Ignoring the request for now!");
+				return;
+			}
+			
 			String senderName = proximityUser.getUserId();
 			String senderIPAddress = proximityUser.getClient().getIp();
 			Integer senderPortNo = proximityUser.getClient().getPort();
