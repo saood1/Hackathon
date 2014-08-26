@@ -475,6 +475,18 @@ public class CommonUtility {
 	{
 		fileList.clear();
 		fileList = getMyFiles(Constants.SHARED_DIR);
+		try {
+			sendUpdatedClientInfoToServer();
+		} catch (JSONException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 	
 	/**
