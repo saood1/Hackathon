@@ -104,8 +104,7 @@ public class CommonUtility {
 		//Create client info json string
 		setClientState(true);
 		String jsonClientInfoString = constructJSONClientInformation();
-		System.out.println("JSON String = " + jsonClientInfoString.toString());
-
+		
 		//Send the client information to the server
 		sendClientInformationToServer(Constants.SERVER_SAVE_CLIENT_INFORMATION, jsonClientInfoString);
 	}
@@ -120,8 +119,7 @@ public class CommonUtility {
 	public void updateClientInformation() throws UnknownHostException, IOException, InterruptedException, JSONException{
 		fileList = getMyFiles(Constants.SHARED_DIR);
 		String jsonClientInfoString = constructJSONClientInformation();
-		System.out.println("JSON String = " + jsonClientInfoString.toString());
-
+		
 		//Send the client information to the server
 		sendClientInformationToServer(Constants.SERVER_SAVE_CLIENT_INFORMATION, jsonClientInfoString);
 	}
@@ -890,11 +888,11 @@ public class CommonUtility {
 				collection.insert(dbObject);
 				return true;
 			}
-			catch(JSONParseException e){
+			catch(JSONParseException e) {
 				System.out.println("error");
 				return false;
-			}catch(JSONException e)
-			{
+			}
+			catch(JSONException e) {
 				System.out.println("error");
 				return false;
 			}
