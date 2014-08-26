@@ -276,7 +276,7 @@ public class CommonUtility {
 
 			//To receiver already has the file, so server ignores the requests
 			if(proximityUser.getUid() == receiverObj.getUid()){
-				printServerMessage("The client " + proximityUser.getUserId() + "I already have the file '" + fileName + "' Ignoring the request for now!");
+				printServerMessage("The client " + proximityUser.getUserId() + " already has the file '" + fileName + "' Ignoring the request for now!");
 				return;
 			}
 			
