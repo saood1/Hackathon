@@ -7,6 +7,11 @@ public class ClientData {
 	private String m_ip;
 	private Integer m_port;
 
+	/**
+	 * @param location
+	 * @param ip
+	 * @param port
+	 */
 	public ClientData(GeoLocation location,  String ip, Integer port) {
 		super();
 		this.m_location = location;

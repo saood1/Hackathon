@@ -106,24 +106,18 @@ public class Client {
 	 * @throws InterruptedException
 	 */
 	private static void updateClientLoc(String line) throws UnknownHostException, JSONException, IOException, InterruptedException {
-		
-		CommonUtility.getInstance().refreshFileList();
-		
 		String[] words =  line.split(" ");
 		
-		if(words.length == 1)
-		{
+		if(words.length == 1) {
 			CommonUtility.getInstance().setMyGeoCoordinates(CommonUtility.getInstance().getMyGeoCordinates());
 			CommonUtility.getInstance().sendUpdatedClientInfoToServer();
 		}
-		else if(words.length == 3)
-		{
+		else if(words.length == 3) {
 			Point p = new Point(Integer.parseInt(words[1]) , Integer.parseInt(words[2]));
 			CommonUtility.getInstance().setMyGeoCoordinates(p);
 			CommonUtility.getInstance().sendUpdatedClientInfoToServer();
 		}
-		else
-		{
+		else {
 			System.out.println("Format of updateState command is erroneous ..");
 			printHelpMenu();
 		}
@@ -141,8 +135,6 @@ public class Client {
 		
 		if(words.length == 2){
 			CommonUtility.getInstance().setClientState(Boolean.parseBoolean(words[1]));
-			CommonUtility.getInstance().refreshFileList();
-			CommonUtility.getInstance().sendUpdatedClientInfoToServer();
 		}
 		else{
 			System.out.println("Unidentified command ...");
