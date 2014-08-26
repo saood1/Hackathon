@@ -175,6 +175,7 @@ public class CommonUtility {
 
 			JSONArray jarr = jo.getJSONArray(Constants.CLIENT_FILE_SEND_REQUEST);
 			JSONObject fileSendRequest = jarr.getJSONObject(0);
+			String senderName = fileSendRequest.getString(Constants.SENDER_NAME);
 			String senderIP = fileSendRequest.getString(Constants.SENDER_IPADDRESS);
 			String receiverIP = fileSendRequest.getString(Constants.RECEIVER_IP_ADDRESS);
 			Integer receiverPortNo = fileSendRequest.getInt(Constants.RECEIVER_PORTNO);
@@ -189,6 +190,7 @@ public class CommonUtility {
 			// Create JSON object out of the strings
 			JSONObject jsobObject = new JSONObject();
 			jsobObject.put(Constants.FROM, senderIP);
+			jsobObject.put(Constants.SENDER_NAME, senderName);
 			jsobObject.put(Constants.FILE_NAME, file.getName());
 
 			JSONArray ja = new JSONArray();
@@ -335,7 +337,7 @@ public class CommonUtility {
 
 		//Extract the client_file_recieve_request information
 		String fileName = jarr.getJSONObject(0).getString(Constants.FILE_NAME);
-		String from = jarr.getJSONObject(0).getString(Constants.FROM);
+		String from = jarr.getJSONObject(0).getString(Constants.SENDER_NAME);
 
 		printClientMessage(getMyUserID(), "Wow!!! ... I just recieved a file '" + fileName + "' from " + from);
 		
