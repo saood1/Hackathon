@@ -188,11 +188,6 @@ public class CommonUtility {
 			File file = new File(filePath);
 			long length = file.length();
 
-			if(file.exists()){
-				printClientMessage(senderName, "I seem to have the file '" + file.getName() + "', I am ingnoring the file request for now!!");
-				return;
-			}
-			
 			// Create JSON object out of the strings
 			JSONObject jsobObject = new JSONObject();
 			jsobObject.put(Constants.FROM, senderIP);
