@@ -40,7 +40,7 @@ public class Client {
 		//Initialize client socket
 		TimeUnit.SECONDS.sleep(5);
 		CommonUtility.getInstance().initializeFileSync();
-		
+	//comment	
 		/*
 		 * Terminal Logic
 		 * 

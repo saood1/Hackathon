@@ -109,7 +109,7 @@ public class CommonUtility {
 		//Send the client information to the server
 		sendClientInformationToServer(Constants.SERVER_SAVE_CLIENT_INFORMATION, jsonClientInfoString);
 	}
-
+//comment
 	/**
 	 * update the client info 
 	 * @throws UnknownHostException
