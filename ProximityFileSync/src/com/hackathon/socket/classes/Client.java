@@ -135,6 +135,7 @@ public class Client {
 		
 		if(words.length == 2){
 			CommonUtility.getInstance().setClientState(Boolean.parseBoolean(words[1]));
+			CommonUtility.getInstance().sendUpdatedClientInfoToServer();
 		}
 		else{
 			System.out.println("Unidentified command ...");
