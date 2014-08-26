@@ -75,16 +75,18 @@ public class ProximityManager {
 
 	public void removeUser(Integer uid){
 		User user = m_mapFromIdToUser.get(uid);
-		for (UserFileMetaData fileInfo : user.getUserFileMetaDataList()) {				
-			SpatialIndex dbNearestRTree = m_mapFromChecksumToProximityUsersRTree.get(fileInfo.getChecksum());
-			if(null != dbNearestRTree) {
-				dbNearestRTree.delete(CommonUtility.getPointRectangle(user.getX(), user.getY()), user.getUid());
-				if(dbNearestRTree.size() == 0) {
-					m_mapFromChecksumToProximityUsersRTree.remove(fileInfo.getChecksum());		
-				}
-			}				
+		if(null != user){
+			for (UserFileMetaData fileInfo : user.getUserFileMetaDataList()) {				
+				SpatialIndex dbNearestRTree = m_mapFromChecksumToProximityUsersRTree.get(fileInfo.getChecksum());
+				if(null != dbNearestRTree) {
+					dbNearestRTree.delete(CommonUtility.getPointRectangle(user.getX(), user.getY()), user.getUid());
+					if(dbNearestRTree.size() == 0) {
+						m_mapFromChecksumToProximityUsersRTree.remove(fileInfo.getChecksum());		
+					}
+				}				
+			}
+			m_mapFromIdToUser.remove(uid);		
 		}
-		m_mapFromIdToUser.remove(uid);		
 	}
 
 	public void clear(){
