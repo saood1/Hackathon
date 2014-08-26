@@ -265,7 +265,7 @@ public class CommonUtility {
 			User proximityUser = proximityManager.getNearestUserToDest(fileName, receiverUUID);
 			
 			//Check if the proximity user is Null
-			if(null == proximityUser){
+			if(null == proximityUser || proximityUser.getUid() == receiverObj.getUid()){
 				printServerMessage("I see that " + receiverName + " is offline, I cannot share a file with him at the moment, Ignoring the request for now!");
 				return;
 			}
