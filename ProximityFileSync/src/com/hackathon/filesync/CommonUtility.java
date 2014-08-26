@@ -14,6 +14,7 @@ import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
@@ -453,7 +454,36 @@ public class CommonUtility {
 	public Boolean getClientState() {
 		return state;
 	}
+	
+	/**
+	 * refresh files list
+	 */
+	public void refreshFileList()
+	{
+		fileList.clear();
+		fileList = getMyFiles(Constants.SHARED_DIR);
+	}
+	
+	/**
+	 * displays current file list
+	 */
+	public void displayFileList()
+	{
+		Iterator<String> it = fileList.iterator();
+		while(it.hasNext())
+			System.out.println("\t" + it.next().toString());
+	}
 
+	/**
+	 * check if file exists locally
+	 * @param name
+	 * @return
+	 */
+	public static Boolean isFileExists(String name)
+	{
+		File file = new File(Constants.SHARED_DIR + name); 
+		return file.exists();
+	}
 
 	/**
 	 * Set the current state of the client
@@ -559,7 +589,7 @@ public class CommonUtility {
 
 		if(files!=null && files.length>0){
 			for (final File fileEntry : folder.listFiles()) {
-				if (!fileEntry.isDirectory()) {
+				if (!fileEntry.isDirectory() && !fileEntry.isHidden() ) {
 					list.add(fileEntry.getName());
 				}
 			}

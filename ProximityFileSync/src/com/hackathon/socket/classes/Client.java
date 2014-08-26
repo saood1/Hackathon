@@ -75,6 +75,11 @@ public class Client {
 				updateClientState(cmd);
 			}
 			
+			else if(cmd.startsWith("fileList"))
+			{
+				displayLocalFiles();
+			}
+			
 			else if(cmd.startsWith("help")){
 				printHelpMenu();
 			}
@@ -87,6 +92,12 @@ public class Client {
 		}while(isClientRunning);
 	}
 
+	private static void displayLocalFiles() throws UnknownHostException {
+		CommonUtility.getInstance().refreshFileList();
+		System.out.println("Local file list : ");
+		CommonUtility.getInstance().displayFileList();
+	}
+
 	/**
 	 * Re-set the geo-cordinates
 	 * @throws UnknownHostException
@@ -95,6 +106,9 @@ public class Client {
 	 * @throws InterruptedException
 	 */
 	private static void updateClientLoc(String line) throws UnknownHostException, JSONException, IOException, InterruptedException {
+		
+		CommonUtility.getInstance().refreshFileList();
+		
 		String[] words =  line.split(" ");
 		
 		if(words.length == 1)
@@ -127,6 +141,7 @@ public class Client {
 		
 		if(words.length == 2){
 			CommonUtility.getInstance().setClientState(Boolean.parseBoolean(words[1]));
+			CommonUtility.getInstance().refreshFileList();
 			CommonUtility.getInstance().sendUpdatedClientInfoToServer();
 		}
 		else{
@@ -150,6 +165,8 @@ public class Client {
 		help += "\n";
 		help += "5. updateState [true/false]";
 		help += "\n";
+		help += "6. fileList";
+		help += "\n";
 		System.out.println(help);
 	}
 
@@ -164,10 +181,16 @@ public class Client {
 		String[] words = line.split(" ");
 		
 		if(words.length == 3){
-			JSONObject sh = new JSONObject();
-			sh.put(Constants.FILE_NAME, words[1].toString());
-			sh.put(Constants.RECIPIENT_USER_ID, words[2].toString());
-			CommonUtility.getInstance().sendFileShareRequestToServer(sh.toString());
+			if(CommonUtility.isFileExists(words[1].toString()))
+			{
+				JSONObject sh = new JSONObject();
+				sh.put(Constants.FILE_NAME, words[1].toString());
+				sh.put(Constants.RECIPIENT_USER_ID, words[2].toString());
+				CommonUtility.getInstance().sendFileShareRequestToServer(sh.toString());
+			}
+			else
+				System.out.println("File doesnt exists locally ....");
+			
 		}
 		else{
 			System.out.println("Unidentified command ...");
