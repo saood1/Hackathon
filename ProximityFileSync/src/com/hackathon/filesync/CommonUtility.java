@@ -246,6 +246,8 @@ public class CommonUtility {
 			String receiverName = jo.getString(Constants.RECIPIENT_USER_ID);
 			Integer receiverUUID = receiverName.hashCode();
 
+			printClientMessage(getMyUserID(), "I wish to share a file '" + fileName + "' with " + receiverName + ", can you help me find the closest client who can deliver this");
+			
 			//Using the proximityManager, get the receiver details
 			User receiverObj = proximityManager.getUserFromIdMap(receiverUUID);
 			String receiverIPAddress = receiverObj.getClient().getIp();
@@ -257,6 +259,8 @@ public class CommonUtility {
 			String senderIPAddress = proximityUser.getClient().getIp();
 			Integer senderPortNo = proximityUser.getClient().getPort();
 
+			printServerMessage("I found " + senderName + " to be the closest client to " + receiverName + ", sending a share request to " + senderName);
+			
 			//Prepare the JSON string for next task
 			JSONObject jsonObject = new JSONObject();
 			jsonObject.put(Constants.SENDER_NAME, senderName);
@@ -276,9 +280,11 @@ public class CommonUtility {
 			// Add the task to map
 			information.put(Constants.CLIENT_FILE_SEND_REQUEST, mainObj.toString().getBytes());
 
-			//System.out.println(jo.toString());
 			Socket socket = socketConnect(senderIPAddress, senderPortNo);
-			sendBytesThroughSocket(socket, information);	
+			sendBytesThroughSocket(socket, information);
+			
+			printServerMessage("Share request sent to " + senderName);
+			
 		}
 		catch (JSONException e){
 			e.printStackTrace();
@@ -291,24 +297,30 @@ public class CommonUtility {
 	 * @param jsonString
 	 * @throws JSONException
 	 */
-	public void executeServerSaveClientInformationRequest(String jsonString) throws JSONException{
-		JSONObject jo = new JSONObject(jsonString);
+	public void executeServerSaveClientInformationRequest(String jsonString, boolean isUpdate) throws JSONException{
 		//Save to DB
 		//PersistantManager persistantManager = PersistantManager.getInstance();
 
 		//Create a User object from json and add/(or update if user already exists) it to proximity manager and persistent manager if user is online
+		JSONObject jo = new JSONObject(jsonString);
 		User user = CommonUtility.createUser(jo.toString());
+		
 		if(user.isUserOnLine()){
+			if(isUpdate){
+				printServerMessage("I got a request to update " + user.getUserId() + " information, I am doing the needful now. Here's his updated information");
+				printUserInformation(user);
+			}	
+			else{
+				printServerMessage("I got a request to save " + user.getUserId() + " information, I am doing the needful now.");
+				printUserInformation(user);
+			}
 			proximityManager.addUser(user);
-			//persistantManager.addUser(jo.toString());
 		}
-		else
-		{
+		else{
+			printServerMessage("Removing user: " + user.getUserId() + " as I see he is offline");
 			int userUID = user.getUid();
 			proximityManager.removeUser(userUID);
-			//persistantManager.removeUser(userUID);
 		}
-
 	}
 
 
@@ -326,7 +338,7 @@ public class CommonUtility {
 		String fileName = jarr.getJSONObject(0).getString(Constants.FILE_NAME);
 		String from = jarr.getJSONObject(0).getString(Constants.FROM);
 
-		System.out.println("File received from " + from);
+		printClientMessage(getMyUserID(), "Wow!!! ... I just recieved a file '" + fileName + "' from " + from);
 		
 		//Process the bytes received from sender and construct the file out of it
 		recieveFile(fileBytes, fileName);
@@ -349,6 +361,8 @@ public class CommonUtility {
 			bos.flush();
 			bos.close();
 			fos.close();
+			
+			printClientMessage(getMyUserID(), "I saved the new file '" + fileName + "' under " + Constants.SHARED_DIR);
 		} 
 		catch (IOException e) {
 			System.out.println(e.getLocalizedMessage());
@@ -373,22 +387,22 @@ public class CommonUtility {
 			try {
 				while (true) {
 					Socket socket = serverSocket.accept();
-					System.out.println("Accepted connection : " + socket);
-
+					
 					ObjectInputStream objInp = new ObjectInputStream(socket.getInputStream());
 					HashMap<String, byte[]> infoMap = (HashMap<String, byte[]>) objInp.readObject();
 
 					//Server receives Save/Update client request using which it parses the client information and saves in DB
 					if (infoMap.containsKey(Constants.SERVER_SAVE_CLIENT_INFORMATION)) {
 						String s = new String(infoMap.get(Constants.SERVER_SAVE_CLIENT_INFORMATION));
-						System.out.println("JSON string received for SERVER_SAVE_CLIENT_INFORMATION : " + s);
-						executeServerSaveClientInformationRequest(s);
+						executeServerSaveClientInformationRequest(s, false);
 					}
+					
+					//Server receives a request to update information
 					else if (infoMap.containsKey(Constants.CLIENT_UPDATE_INFO)) {
 						String s = new String(infoMap.get(Constants.CLIENT_UPDATE_INFO));
-						System.out.println("JSON string received for CLIENT_UPDATE_INFO : " + s);
-						executeServerSaveClientInformationRequest(s);
+						executeServerSaveClientInformationRequest(s, true);
 					}
+					
 					//Server receives Share request using which it checks the nearest node
 					else if (infoMap.containsKey(Constants.SERVER_SHARE_REQUEST)) {
 						String s = new String(infoMap.get(Constants.SERVER_SHARE_REQUEST));
@@ -979,5 +993,38 @@ public class CommonUtility {
 		String jsonClientInfoString = constructJSONClientInformation();
 		System.out.println("JSON String = " + jsonClientInfoString.toString());
 		sendClientInformationToServer(Constants.CLIENT_UPDATE_INFO, jsonClientInfoString);
+	}
+	
+	
+	/**
+	 * A function to print only server messages
+	 * @param message
+	 */
+	private static void printServerMessage(String message){
+		System.out.println("Server: " + message);
+	}
+	
+	
+	/**
+	 * Format and print the user's information
+	 * @param user
+	 */
+	private static void printUserInformation(User user){
+		System.out.println("User's name            = " + user.getUserId());
+		System.out.println("User's Id              = " + user.getUid());
+		System.out.println("User's Geo-Coordinates = " + user.getX() + "," + user.getY());
+		System.out.println("User's Ip Address      = " + user.getClient().getIp());
+		System.out.println();
+		System.out.println();
+	}
+	
+	
+	/**
+	 * A function to print only clients messages
+	 * @param clientName
+	 * @param message
+	 */
+	private static void printClientMessage(String clientName, String message){
+		System.out.println(clientName + ": " + message);
 	}
 }
