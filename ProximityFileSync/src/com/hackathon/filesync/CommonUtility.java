@@ -1044,6 +1044,7 @@ public class CommonUtility {
 		System.out.println("User's Id              = " + user.getUid());
 		System.out.println("User's Geo-Coordinates = " + user.getX() + "," + user.getY());
 		System.out.println("User's Ip Address      = " + user.getClient().getIp());
+		System.out.println("User's Current files   = " + user.getUserFileMetaDataList());
 		System.out.println();
 		System.out.println();
 	}

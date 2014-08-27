@@ -35,5 +35,9 @@ public class UserFileMetaData {
 	public void setVersion(Integer version) {
 		this.m_version = version;
 	}
+	
+	public String toString(){
+		return m_fileName;
+	}
 
 }
