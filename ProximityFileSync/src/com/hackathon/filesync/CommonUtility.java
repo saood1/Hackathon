@@ -319,23 +319,26 @@ public class CommonUtility {
 		//Create a User object from json and add/(or update if user already exists) it to proximity manager and persistent manager if user is online
 		JSONObject jo = new JSONObject(jsonString);
 		User user = CommonUtility.createUser(jo.toString());
-
-		if(user.isUserOnLine()){
-			if(isUpdate){
-				printServerMessage("I got a request to update " + user.getUserId() + " information, I am doing the needful now. Here's his updated information");
-				printUserInformation(user);
-			}	
-			else{
-				printServerMessage("I got a request to save " + user.getUserId() + " information, I am doing the needful now.");
-				printUserInformation(user);
+		
+		try{
+			if(user.isUserOnLine()){
+				if(isUpdate){
+					printServerMessage("I got a request to update " + user.getUserId() + " information, I am doing the needful now. Here's his updated information");
+					printUserInformation(user);
+				}	
+				else{
+					printServerMessage("I got a request to save " + user.getUserId() + " information, I am doing the needful now.");
+					printUserInformation(user);
+				}
+				proximityManager.addUser(user);
 			}
-			proximityManager.addUser(user);
+			else{
+				printServerMessage("Removing user: " + user.getUserId() + " as I see he is offline");
+				int userUID = user.getUid();
+				proximityManager.removeUser(userUID);
+			}	
 		}
-		else{
-			printServerMessage("Removing user: " + user.getUserId() + " as I see he is offline");
-			int userUID = user.getUid();
-			proximityManager.removeUser(userUID);
-		}
+		catch(InterruptedException e){}
 	}
 
 
@@ -346,19 +349,23 @@ public class CommonUtility {
 	 * @throws JSONException
 	 */
 	public void executeClientFileRecieveRequest(String jsonString, byte fileBytes[]) throws JSONException{
-		JSONObject jo = new JSONObject(jsonString);
-		JSONArray jarr = jo.getJSONArray(Constants.FILE_DETAILS);
+		try{
+			JSONObject jo = new JSONObject(jsonString);
+			JSONArray jarr = jo.getJSONArray(Constants.FILE_DETAILS);
 
-		//Extract the client_file_recieve_request information
-		String fileName = jarr.getJSONObject(0).getString(Constants.FILE_NAME);
-		String from = jarr.getJSONObject(0).getString(Constants.SENDER_NAME);
-		
-		File f = new File(Constants.SHARED_DIR + fileName);
-		
-		printClientMessage(getMyUserID(), "Wow!!! ... I just recieved a file '" + fileName + "' from " + from);
+			//Extract the client_file_recieve_request information
+			String fileName = jarr.getJSONObject(0).getString(Constants.FILE_NAME);
+			String from = jarr.getJSONObject(0).getString(Constants.SENDER_NAME);
+			
+			File f = new File(Constants.SHARED_DIR + fileName);
+			
+			printClientMessage(getMyUserID(), "Wow!!! ... I just recieved a file '" + fileName + "' from " + from);
 
-		//Process the bytes received from sender and construct the file out of it
-		recieveFile(fileBytes, fileName);
+			//Process the bytes received from sender and construct the file out of it
+			recieveFile(fileBytes, fileName);
+	
+		}
+		catch(InterruptedException e){}
 	}
 
 
@@ -384,6 +391,7 @@ public class CommonUtility {
 		catch (IOException e) {
 			System.out.println(e.getLocalizedMessage());
 		}
+		catch(InterruptedException e){}
 	}
 
 
@@ -1028,8 +1036,10 @@ public class CommonUtility {
 	/**
 	 * A function to print only server messages
 	 * @param message
+	 * @throws InterruptedException 
 	 */
-	private static void printServerMessage(String message){
+	private static void printServerMessage(String message) throws InterruptedException{
+		TimeUnit.SECONDS.sleep(1);
 		System.out.println();
 		System.out.println("Server: " + message);
 	}
@@ -1038,8 +1048,10 @@ public class CommonUtility {
 	/**
 	 * Format and print the user's information
 	 * @param user
+	 * @throws InterruptedException 
 	 */
-	private static void printUserInformation(User user){
+	private static void printUserInformation(User user) throws InterruptedException{
+		TimeUnit.SECONDS.sleep(1);
 		System.out.println("User's name            = " + user.getUserId());
 		System.out.println("User's Id              = " + user.getUid());
 		System.out.println("User's Geo-Coordinates = " + user.getX() + "," + user.getY());
@@ -1054,8 +1066,10 @@ public class CommonUtility {
 	 * A function to print only clients messages
 	 * @param clientName
 	 * @param message
+	 * @throws InterruptedException 
 	 */
-	private static void printClientMessage(String clientName, String message){
+	private static void printClientMessage(String clientName, String message) throws InterruptedException{
+		TimeUnit.SECONDS.sleep(1);
 		System.out.println();
 		System.out.println(clientName + ": " + message);
 	}
