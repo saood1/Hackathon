@@ -588,7 +588,7 @@ public class CommonUtility {
 	 * @return 5 digit port no which is unused by the system
 	 */
 	public int getMyPortNo() {
-		int val = getRandomInteger(49152, 65534);
+		int val = getRandomInteger(49153, 65534);
 		return val;
 	}
 
