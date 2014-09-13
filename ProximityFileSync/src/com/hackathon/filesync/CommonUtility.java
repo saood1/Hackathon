@@ -2,15 +2,19 @@ package com.hackathon.filesync;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.InetAddress;
+import java.net.MalformedURLException;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.net.URL;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -482,10 +486,41 @@ public class CommonUtility {
 	 * @return The ip address of the current system
 	 */
 	public String getMyIPAddress() throws UnknownHostException {
-		String val = InetAddress.getLocalHost().getHostAddress();
+		String val = getExternalIPAddress();
 		return val;
 	}
 
+	/**
+	 * Get the external IP address using amazon web ip service
+	 * @return
+	 */
+	private String getExternalIPAddress() {
+		try{
+			URL whatismyip = new URL("http://checkip.amazonaws.com");
+	        BufferedReader in = new BufferedReader(new InputStreamReader(whatismyip.openStream()));
+        
+			try {
+			    String ip = in.readLine();
+	            return ip;
+	        }
+	        finally {
+	            if (in != null) {
+	                try {
+	                    in.close();
+	                } catch (IOException e) {
+	                    e.printStackTrace();
+	                }
+	            }
+	        }
+	
+		}
+		catch(Exception e){
+			System.out.println("An exception occured while feetching the IP address of your machine");	
+		}
+		
+		return "";
+	}
+	
 
 	/**
 	 * @return the current state of the client - offline or online
@@ -1056,6 +1091,7 @@ public class CommonUtility {
 		System.out.println("User's Id              = " + user.getUid());
 		System.out.println("User's Geo-Coordinates = " + user.getX() + "," + user.getY());
 		System.out.println("User's Ip Address      = " + user.getClient().getIp());
+		System.out.println("User's Port No         = " + user.getClient().getPort());
 		System.out.println("User's Current files   = " + user.getUserFileMetaDataList());
 		System.out.println("User's Online status   = " + user.isUserOnLine());
 		System.out.println();
