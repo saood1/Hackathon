@@ -16,7 +16,9 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.URL;
 import java.net.UnknownHostException;
+import java.sql.Date;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -302,7 +304,7 @@ public class CommonUtility {
 			Socket socket = socketConnect(senderIPAddress, senderPortNo);
 			sendBytesThroughSocket(socket, information);
 
-			printServerMessage("Share request sent to " + senderName);
+			printServerMessage("Share request sent to " + senderName + " at " + Calendar.getInstance().getTime());
 
 		}
 		catch (JSONException e){
@@ -390,7 +392,7 @@ public class CommonUtility {
 			bos.close();
 			fos.close();
 
-			printClientMessage(getMyUserID(), "I saved the new file '" + fileName + "' under " + Constants.SHARED_DIR);
+			printClientMessage(getMyUserID(), "I saved the new file '" + fileName + "' under " + Constants.SHARED_DIR + " at " + Calendar.getInstance().getTime());
 		} 
 		catch (IOException e) {
 			System.out.println(e.getLocalizedMessage());
@@ -487,6 +489,7 @@ public class CommonUtility {
 	 */
 	public String getMyIPAddress() throws UnknownHostException {
 		String val = getExternalIPAddress();
+		//String val = InetAddress.getLocalHost().getHostAddress();
 		return val;
 	}
 
